@@ -137,7 +137,7 @@ export default () => <navio.Root />;
 
 </details>
 
-- Advanced example with all available props can be found @ [expo-starter/src/screens/index.tsx](https://github.com/kanzitelli/expo-starter/blob/navio/src/screens/index.tsx)
+- Advanced example with all available props can be found @ [expo-starter/src/screens/index.tsx](https://github.com/kanzitelli/expo-starter/blob/master/src/screens/index.tsx)
 
 ## Usage
 
