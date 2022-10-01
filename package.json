@@ -21,12 +21,17 @@
     "release:npm:next": "run-s build && npm publish --tag next"
   },
   "peerDependencies": {
+    "@react-navigation/bottom-tabs": "^6.4.0",
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/native-stack": "^6.9.0",
-    "@react-navigation/bottom-tabs": "^6.4.0"
+    "react": "*",
+    "react-native": "*"
   },
   "devDependencies": {
     "@react-native-community/eslint-config": "^3.1.0",
+    "@react-navigation/bottom-tabs": "^6.4.0",
+    "@react-navigation/native": "^6.0.13",
+    "@react-navigation/native-stack": "^6.9.0",
     "@tsconfig/react-native": "^2.0.2",
     "@types/react": "^18.0.21",
     "dotenv-cli": "^6.0.0",
