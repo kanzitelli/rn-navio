@@ -28,7 +28,13 @@ For more information, please check the [installation steps](https://reactnavigat
 
 ## Playground
 
-You can play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-navio-snack).
+You can bootstrap (from [expo-starter](https://github.com/kanzitelli/expo-starter)) a new project with Expo and Navio:
+
+```bash
+npx cli-rn new app
+```
+
+Or play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-navio-snack):
 
 [![Navio Expo Snack Example](https://user-images.githubusercontent.com/4402166/193429279-f324592c-0682-420f-8608-d8e9756f1fc6.png)](https://snack.expo.dev/@kanzitelli/rn-navio-snack)
 
@@ -131,7 +137,7 @@ export default () => <navio.Root />;
 
 </details>
 
-- Advanced example with all available props can be found @ [kanzitelli/expo-starter](https://github.com/kanzitelli/expo-starter/blob/navio/src/screens/index.tsx)
+- Advanced example with all available props can be found @ [expo-starter/src/screens/index.tsx](https://github.com/kanzitelli/expo-starter/blob/navio/src/screens/index.tsx)
 
 ## Usage
 
