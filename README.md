@@ -1,11 +1,11 @@
 # 🧭 Navio
 
-☣️ <i>This is an experimental library and may have breaking changes in the future.</i>
-
 [![Expo Snack](https://img.shields.io/badge/𝝠%20Expo-Snack-blue)](https://snack.expo.dev/@kanzitelli/rn-navio-snack)
 [![Expo Compatible](https://img.shields.io/badge/𝝠%20Expo-Compatible-brightgreen)](https://snack.expo.dev/@kanzitelli/rn-navio-snack)
 
 Navio is a tiny library (wrapper) built on top of [React Navigation](https://github.com/react-navigation/react-navigation) that makes it easy to build an app's layout (navigation structure) in one place and use benefits of types predictability across the app. Predictability of route names while building app's layout and using navigation methods (e.g. push, jumpTo) leads to better DX, less mistakes and faster development process. And yes, no more messing with `<NavigationContainer>`, `<Tabs.Navigator>`s and `<Stack.Screen>`s!
+
+☣️ <i>This is an experimental library and may have breaking changes in the future.</i>
 
 ## Quickstart
 
@@ -29,6 +29,8 @@ For more information, please check the [installation steps](https://reactnavigat
 ## Playground
 
 You can play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-navio-snack).
+
+[![Navio Expo Snack Example](https://user-images.githubusercontent.com/4402166/193428869-e5cfaec1-9d9e-40e4-a213-60f268345192.png)](https://snack.expo.dev/@kanzitelli/rn-navio-snack)
 
 ## Examples
 
