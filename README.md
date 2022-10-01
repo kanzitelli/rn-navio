@@ -30,7 +30,7 @@ For more information, please check the [installation steps](https://reactnavigat
 
 You can play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-navio-snack).
 
-[![Navio Expo Snack Example](https://user-images.githubusercontent.com/4402166/193428869-e5cfaec1-9d9e-40e4-a213-60f268345192.png)](https://snack.expo.dev/@kanzitelli/rn-navio-snack)
+[![Navio Expo Snack Example](https://user-images.githubusercontent.com/4402166/193429279-f324592c-0682-420f-8608-d8e9756f1fc6.png)](https://snack.expo.dev/@kanzitelli/rn-navio-snack)
 
 ## Examples
 
