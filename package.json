@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "format": "prettier --write \"{src,}/**/*.ts\"",
+    "format": "prettier --write \"{src,}/**/*.{ts,tsx}\"",
     "build": "run-s clean format build:*",
     "build:main": "tsc -p tsconfig.json",
     "release": "run-s release:github release:npm",
