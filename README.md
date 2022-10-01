@@ -30,9 +30,6 @@ For more information, please check the [installation steps](https://reactnavigat
 
 You can play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-navio-snack).
 
-<div data-snack-id="@kanzitelli/rn-navio-snack" data-snack-platform="web" data-snack-preview="true" data-snack-theme="light" style="overflow:hidden;background:#F9F9F9;border:1px solid var(--color-border);border-radius:4px;height:505px;width:100%"></div>
-<script async src="https://snack.expo.dev/embed.js"></script>
-
 ## Examples
 
 - 2 screens
