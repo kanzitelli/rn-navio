@@ -1,0 +1,14 @@
+{
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "types": ["node"]
+  },
+  "exclude": ["node_modules", "dist"]
+}

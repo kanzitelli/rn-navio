@@ -1,0 +1,13 @@
+{
+  "non-interactive": true,
+  "git": {
+    "requireCleanWorkingDir": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}"
+  }
+}

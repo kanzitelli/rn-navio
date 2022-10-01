@@ -1,0 +1,53 @@
+{
+  "name": "rn-navio",
+  "version": "0.0.0",
+  "description": "🧭 Navio - Universal navigation library for React Native. Build the app's layout in one place and use benefits of types predictibility. Built on top of React Navigation (RNN in the future with the same API).",
+  "author": "Batyr <dev@batyr.io>",
+  "homepage": "https://github.com/kanzitelli/rn-navio",
+  "bugs": "https://github.com/kanzitelli/rn-navio/issues",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "format": "prettier --write \"{src,}/**/*.ts\"",
+    "build": "run-s clean format build:*",
+    "build:main": "tsc -p tsconfig.json",
+    "release": "run-s release:github release:npm",
+    "release:github": "dotenv release-it",
+    "release:npm": "npm publish --access public",
+    "release:npm:next": "run-s build && npm publish --tag next"
+  },
+  "peerDependencies": {
+    "@react-navigation/native": "^6.0.13",
+    "@react-navigation/native-stack": "^6.9.0",
+    "@react-navigation/bottom-tabs": "^6.4.0"
+  },
+  "devDependencies": {
+    "@react-native-community/eslint-config": "^3.1.0",
+    "@tsconfig/react-native": "^2.0.2",
+    "@types/react": "^18.0.21",
+    "dotenv-cli": "^6.0.0",
+    "eslint": "^8.24.0",
+    "husky": "^8.0.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.7.1",
+    "pretty-quick": "^3.1.3",
+    "release-it": "^15.4.2",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.8.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "keywords": [
+    "typescript",
+    "library",
+    "starter"
+  ],
+  "license": "MIT"
+}
