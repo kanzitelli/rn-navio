@@ -2,6 +2,9 @@ import React, {PropsWithChildren} from 'react';
 import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
 import {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import {NavigationContainer, ParamListBase, RouteProp} from '@react-navigation/native';
+import {DrawerNavigationOptions} from '@react-navigation/drawer';
+
+export type Keys<T> = keyof T;
 
 export type BaseOptions<Return = NativeStackNavigationOptions> =
   | Return
@@ -14,20 +17,36 @@ export type TScreenData<Props = {}> =
     };
 export type TStackDataObj<ScreenName> = {
   screens: ScreenName[];
+  screenProps?: any; // TODO
   navigatorOptions?: any; // TODO
 };
 export type TStackData<ScreenName> = ScreenName[] | TStackDataObj<ScreenName>;
 export type TStack<ScreenName, StackName> = StackName | TStackData<ScreenName>;
+export type TDrawer<DrawerName> = DrawerName; // maybe smth else will be added
 export type TTabData<ScreenName, StackName> = {
   stack: TStack<ScreenName, StackName>;
   options?: BaseOptions<BottomTabNavigationOptions>;
-  navigatorOptions?: any; // TODO
+  screenProps?: any; // TODO
+  navigatorProps?: any; // TODO
 };
 export type TModalData<ScreenName, StackName> = TStack<ScreenName, StackName>;
-export type TRootName<T> = 'Tabs' | T;
+export type TDrawerData<ScreenName, StackName> = {
+  content: Record<string, TStack<ScreenName, StackName>>;
+  options?: BaseOptions<DrawerNavigationOptions>;
+  screenProps?: any; // TODO
+  navigatorProps?: any; // TODO
+};
+export type TRootName<StackName, DrawerName> = 'Tabs' | StackName | DrawerName;
 export type ExtractProps<Type> = Type extends React.FC<infer X> ? X : never;
 
-export type Layout<Screens = any, Stacks = any, Tabs = any, Modals = any, RootName = any> = {
+export type Layout<
+  Screens = any,
+  Stacks = any,
+  Tabs = any,
+  Modals = any,
+  Drawers = any,
+  RootName = any,
+> = {
   /**
    * `(required)`
    * Screens of the app. Navigate to by using `navio.push('...')` method.
@@ -54,6 +73,12 @@ export type Layout<Screens = any, Stacks = any, Tabs = any, Modals = any, RootNa
 
   /**
    * `(optional)`
+   * Drawers of the app. Navigate to by using `navio.drawer.open('...Drawer')` method.
+   */
+  drawers?: Drawers;
+
+  /**
+   * `(optional)`
    * Root name to start the app with. Possible values `'Tabs' | any of stack`.
    */
   root?: RootName;
@@ -66,12 +91,14 @@ export type Layout<Screens = any, Stacks = any, Tabs = any, Modals = any, RootNa
 
   /**
    * `(optional)`
-   * Default options to be applied per each stack's screens or tab generated within the app layout.
+   * Default options to be applied per each stack's screens, tab or drawer generated within the app layout.
    */
-  options?: {
-    stack?: BaseOptions<NativeStackNavigationOptions>;
-    tab?: BaseOptions<BottomTabNavigationOptions>;
-  };
+  defaultOptions?: DefaultOptions;
+};
+export type DefaultOptions = {
+  stack?: BaseOptions<NativeStackNavigationOptions>;
+  tab?: BaseOptions<BottomTabNavigationOptions>;
+  drawer?: BaseOptions<DrawerNavigationOptions>;
 };
 export type NavioScreen<Props = {}> = React.FC<PropsWithChildren<Props>> & {
   options?: BaseOptions<NativeStackNavigationOptions>;
@@ -81,5 +108,4 @@ export type NavioScreen<Props = {}> = React.FC<PropsWithChildren<Props>> & {
 export type RootProps<RootName extends string> = {
   navigationContainerProps?: Omit<ExtractProps<typeof NavigationContainer>, 'children'>;
   initialRouteName?: RootName; // TODO must be observable
-  extend?: JSX.Element | null;
 };

@@ -4,17 +4,26 @@ import {
   CommonActions,
   StackActions,
   TabActions,
+  DrawerActions,
 } from '@react-navigation/native';
 import React from 'react';
-import {TRootName} from './types';
+import {Keys, TDrawerData, TModalData, TRootName, TScreenData, TStackData, TTabData} from './types';
 
 export class NavioNavigation<
   ScreenName extends string,
   StackName extends string,
   TabName extends string,
   ModalName extends string,
+  DrawerName extends string,
+  DrawerContentName extends Keys<DrawerData['content']>,
   //
-  RootName extends TRootName<StackName> = TRootName<StackName>,
+  ScreenData extends TScreenData,
+  StackData extends TStackData<ScreenName>,
+  TabData extends TTabData<ScreenName, StackName>,
+  ModalData extends TModalData<ScreenName, StackName>,
+  DrawerData extends TDrawerData<ScreenName, StackName>,
+  //
+  RootName extends TRootName<StackName, DrawerName> = TRootName<StackName, DrawerName>,
 > {
   protected navRef: NavigationContainerRefWithCurrent<any>;
   protected navIsReadyRef: React.MutableRefObject<boolean | null>;
@@ -135,9 +144,9 @@ export class NavioNavigation<
   }
 
   /**
-   * `setRoot(...)` is used to set a new root of the app. It can be used to switch Auth and App stacks.
+   * `setRoot(...)` is used to set a new root of the app. It can be used to switch between Auth and App stacks.
    *
-   * @param name 'Tabs' | StackName
+   * @param name 'Tabs' | StackName | DrawerName
    */
   setRoot<T extends RootName>(name: T) {
     if (this.navIsReady) {
@@ -146,6 +155,12 @@ export class NavioNavigation<
           routes: [{name}],
         }),
       );
+    }
+  }
+
+  drawerJumpTo<T extends DrawerContentName>(name: T) {
+    if (this.navIsReady) {
+      this.navRef.current?.dispatch(DrawerActions.jumpTo(name as string));
     }
   }
 }
