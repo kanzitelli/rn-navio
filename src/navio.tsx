@@ -147,10 +147,13 @@ export class Navio<
       const screensKeys: ScreenName[] = Array.isArray(stackDef)
         ? stackDef
         : typeof stackDef === 'string'
-        ? typeof stacks[stackDef] === 'object'
+        ? Array.isArray(stacks[stackDef])
+          ? (stacks[stackDef] as ScreenName[])
+          : typeof stacks[stackDef] === 'object'
           ? (stacks[stackDef] as TStackDataObj<ScreenName>).screens
           : []
         : [];
+
       return screensKeys.map(sk => {
         const key = String(sk) as string;
         const s = screens[key as ScreenName];
