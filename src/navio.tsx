@@ -25,8 +25,6 @@ import {
   Keys,
 } from './types';
 
-// Navio navigation
-
 export class Navio<
   ScreenName extends string,
   StackName extends string,
@@ -359,7 +357,7 @@ export class Navio<
       });
     }, [drawers]);
 
-    // -- generating fake stack (if none [stacks, tabs] is provided)
+    // -- generating fake stack (if none [stacks, tabs, drawers] is provided)
     const FakeStackMemo = useMemo(() => {
       const fakeStackKeys = Object.keys(screens ?? {}) as ScreenName[];
       const C = () => {
@@ -375,13 +373,6 @@ export class Navio<
     }, [screens]);
 
     // -- generating app's screens
-    // const ExtendMemo = useMemo(() => {
-    //   const C = () => {
-    //     if (!extend) return null;
-    //     return extend;
-    //   };
-    //   return <RootStack.Screen key={'Extend'} name={'Extend'} component={C} />;
-    // }, [extend]);
     const AppScreensMemo = useMemo(() => {
       if (!TabsMemo && !StacksMemo && !DrawersMemo) return FakeStackMemo;
 
@@ -395,7 +386,7 @@ export class Navio<
           initialRouteName={appRoot as string}
           screenOptions={{headerShown: false}}
         >
-          {/* Tabs and Stacks */}
+          {/* Tabs, Stacks, Drawers */}
           <RootStack.Group>{[AppScreensMemo]}</RootStack.Group>
 
           {/* Modals */}
