@@ -1,12 +1,20 @@
 import {createBottomTabNavigator, BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
-import {NavigationContainer, NavigationContainerRef} from '@react-navigation/native';
+import {
+  CommonActions,
+  createNavigationContainerRef,
+  DrawerActions,
+  NavigationContainer,
+  NavigationContainerRef,
+  NavigationContainerRefWithCurrent,
+  StackActions,
+  TabActions,
+} from '@react-navigation/native';
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import {createDrawerNavigator, DrawerNavigationOptions} from '@react-navigation/drawer';
 import React, {useEffect, useMemo, useState} from 'react';
-import {NavioNavigation} from './navio-navigation';
 import {
   TScreenData,
   TStackData,
@@ -56,19 +64,6 @@ export class Navio<
     tabs: TabsName;
     drawers: DrawersName;
   },
-> extends NavioNavigation<
-  ScreensName,
-  StacksName,
-  TabsName,
-  ModalsName,
-  DrawersName,
-  ScreensData,
-  StacksData,
-  TabsData,
-  ModalsData,
-  DrawersData,
-  TabsContentName,
-  DrawersContentName
 > {
   static build<
     ScreensName extends string,
@@ -130,6 +125,8 @@ export class Navio<
     Record<DrawersName, DrawersData>,
     RootName
   >;
+  private navRef: NavigationContainerRefWithCurrent<any>;
+  private navIsReadyRef: React.MutableRefObject<boolean | null>;
   private emitter: NavioEmitter;
 
   // ========
@@ -145,16 +142,105 @@ export class Navio<
       RootName
     >,
   ) {
-    const __emitter = new NavioEmitter();
-    super(__emitter);
-    this.emitter = __emitter;
+    // Emitter
+    this.emitter = new NavioEmitter();
 
+    // Layout
     this.layout = data;
+
+    // Navigation
+    this.navRef = createNavigationContainerRef<any>();
+    this.navIsReadyRef = React.createRef<boolean>();
+  }
+
+  // ===========
+  // | Getters |
+  // ===========
+  get N() {
+    return this.navRef;
+  }
+
+  protected get navIsReady() {
+    return (
+      !!this.navIsReadyRef && this.navIsReadyRef.current && !!this.navRef && !!this.navRef.current
+    );
   }
 
   // ===========
   // | Methods |
   // ===========
+  private log(message: string, type: 'log' | 'warn' | 'error' = 'log') {
+    console[type](`[navio] ${message}`);
+  }
+
+  private __setRoot(routeName: string) {
+    if (this.layout.stacks && this.layout.stacks[routeName as StacksName]) {
+      this.stacks.setRoot(routeName as StacksName);
+    }
+    if (this.layout.tabs && this.layout.tabs[routeName as TabsName]) {
+      this.tabs.setRoot(routeName as TabsName);
+    }
+    if (this.layout.drawers && this.layout.drawers[routeName as DrawersName]) {
+      this.drawers.setRoot(routeName as DrawersName);
+    }
+  }
+
+  protected navigate = <
+    T extends ScreensName | StacksName | TabsName | ModalsName,
+    Params extends object | undefined,
+  >(
+    name: T,
+    params?: Params,
+  ): void => {
+    if (this.navIsReady) {
+      this.navRef.current?.dispatch(
+        CommonActions.navigate({
+          name: name as string,
+          params,
+        }),
+      );
+    }
+  };
+
+  // ===========
+  // | Actions |
+  // ===========
+  /**
+   * `push(...)` action adds a route on top of the stack and navigates forward to it.
+   *
+   * @param name ScreensName
+   * @param params Params
+   */
+  push<T extends ScreensName, Params extends object | undefined>(name: T, params?: Params) {
+    if (this.navIsReady) {
+      this.navRef.current?.dispatch(StackActions.push(name as string, params));
+    }
+  }
+
+  /**
+   * `goBack()` action creator allows to go back to the previous route in history.
+   */
+  goBack() {
+    if (this.navIsReady) {
+      this.navRef.current?.goBack();
+    }
+  }
+
+  /**
+   * `setParams(...)` action allows to update params for a certain route.
+   *
+   * @param name all available navigation keys. Leave `undefined` if applying for the focused route.
+   * @param params object
+   */
+  setParams<T extends string>(name: T, params: object) {
+    if (this.navIsReady) {
+      this.navRef.current?.dispatch({
+        ...CommonActions.setParams(params),
+        source: name as string,
+      });
+    }
+  }
+
   /**
    * `setRoot(as, name)` action sets a new app root.
    *
@@ -172,21 +258,223 @@ export class Navio<
     }
   }
 
-  // Private
-  private log(message: string, type: 'log' | 'warn' | 'error' = 'log') {
-    console[type](`[navio] ${message}`);
+  /**
+   * `stacks` contains navigation actions for stack-based navigators.
+   *
+   * Available methods:
+   *
+   * `push`, `pop`, `popToTop`, `setRoot`
+   *
+   */
+  get stacks() {
+    // local copy of current instance
+    const self = this;
+
+    return {
+      /**
+       * `push(...)` action adds a route on top of the stack and navigates forward to it.
+       *
+       * Tips: It will "hide" tabs.
+       *
+       * @param name StacksName
+       */
+      push<T extends StacksName>(name: T) {
+        if (self.navIsReady) {
+          self.navigate(name);
+        }
+      },
+
+      /**
+       * `pop(...)` action takes you back to a previous screen in the stack.
+       *
+       * @param count number
+       */
+      pop(count?: number) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(StackActions.pop(count));
+        }
+      },
+
+      /**
+       * `popToPop()` action takes you back to the first screen in the stack, dismissing all the others.
+       */
+      popToTop() {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(StackActions.popToTop());
+        }
+      },
+
+      /**
+       * `setRoot(...)` action sets a new app root from stacks.
+       *
+       * Tips: It can be used to switch between Auth and App stacks.
+       *
+       * @param name StacksName
+       */
+      setRoot<T extends StacksName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(
+            CommonActions.reset({
+              routes: [{name}],
+            }),
+          );
+        }
+      },
+    };
   }
 
-  private __setRoot(routeName: string) {
-    if (this.layout.stacks && this.layout.stacks[routeName as StacksName]) {
-      this.stacks.setRoot(routeName as StacksName);
-    }
-    if (this.layout.tabs && this.layout.tabs[routeName as TabsName]) {
-      this.tabs.setRoot(routeName as TabsName);
-    }
-    if (this.layout.drawers && this.layout.drawers[routeName as DrawersName]) {
-      this.drawers.setRoot(routeName as DrawersName);
-    }
+  /**
+   * `tabs` contains navigation actions for tab-based navigators.
+   *
+   * Available methods:
+   *
+   * `jumpTo`, `setRoot`
+   *
+   */
+  get tabs() {
+    // local copy of current instance
+    const self = this;
+
+    return {
+      /**
+       * `jumpTo(...)` action can be used to jump to an existing route in the tab navigator.
+       *
+       * @param name TabName
+       */
+      jumpTo<T extends TabsContentName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(TabActions.jumpTo(name as string));
+        }
+      },
+
+      /**
+       * `updateOptions(...)` action updates provided tab's options.
+       *
+       * Tips: It can be used to update badge count.
+       *
+       * @param name name of the tab
+       * @param options `BaseOptions<BottomTabNavigationOptions>` options for the tab.
+       */
+      updateOptions<T extends TabsContentName>(
+        name: T,
+        options: BaseOptions<BottomTabNavigationOptions>,
+      ) {
+        self.emitter.emit('tabs.updateOptions', {name, options});
+      },
+
+      /**
+       * `setRoot(...)` action sets a new app root from tabs.
+       *
+       * Tips: It can be used to switch between Auth and Tabs.
+       *
+       * @param name TabsName
+       */
+      setRoot<T extends TabsName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(
+            CommonActions.reset({
+              routes: [{name}],
+            }),
+          );
+        }
+      },
+    };
+  }
+
+  /**
+   * `modals` contains navigation actions for modals.
+   *
+   * Available methods:
+   *
+   * `show`
+   *
+   */
+  get modals() {
+    // local copy of current instance
+    const self = this;
+
+    return {
+      /**
+       * `show(...)` action can be used to show an existing modal.
+       *
+       * @param name ModalsName
+       */
+      show<T extends ModalsName>(name: T) {
+        if (self.navIsReady) {
+          self.navigate(name);
+        }
+      },
+    };
+  }
+
+  /**
+   * `drawers` contains navigation actions for drawer-based navigators.
+   *
+   * Available methods:
+   *
+   * `open`, `close`, `toggle`, `jumpTo`, `setRoot`
+   *
+   */
+  get drawers() {
+    // local copy of current instance
+    const self = this;
+
+    return {
+      /**
+       * `open()` action can be used to open the drawer pane.
+       */
+      open() {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(DrawerActions.openDrawer());
+        }
+      },
+
+      /**
+       * `close()` action can be used to close the drawer pane.
+       */
+      close() {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(DrawerActions.closeDrawer());
+        }
+      },
+
+      /**
+       * `toggle()` action can be used to open the drawer pane if closed, or close if open.
+       */
+      toggle() {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(DrawerActions.toggleDrawer());
+        }
+      },
+
+      /**
+       * `jumpTo(...)` action can be used to jump to an existing route in the drawer navigator.
+       *
+       * @param name StacksName
+       */
+      jumpTo<T extends DrawersContentName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(DrawerActions.jumpTo(name as string));
+        }
+      },
+
+      /**
+       * `setRoot(...)` action sets a new app root from drawers.
+       *
+       * Tips: It can be used to switch between Auth and Drawers.
+       *
+       * @param name DrawersName
+       */
+      setRoot<T extends DrawersName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(
+            CommonActions.reset({
+              routes: [{name}],
+            }),
+          );
+        }
+      },
+    };
   }
 
   // ===========
@@ -371,19 +659,17 @@ export class Navio<
 
     // -- building navigator
     const Tabs = createBottomTabNavigator();
-    const TabsScreensMemo = useMemo(
-      () =>
-        Object.keys(currentTabs.content).map(key =>
+    return (
+      <Tabs.Navigator {...currentTabs.navigatorProps}>
+        {Object.keys(currentTabs.content).map(key =>
           this.TabsScreen({
             key,
             Navigator: Tabs,
             content: currentTabs.content[key],
           }),
-        ),
-      [tabs, Tabs, currentTabs],
+        )}
+      </Tabs.Navigator>
     );
-
-    return <Tabs.Navigator {...currentTabs.navigatorProps}>{TabsScreensMemo}</Tabs.Navigator>;
   };
 
   private TabsScreen: React.FC<{
