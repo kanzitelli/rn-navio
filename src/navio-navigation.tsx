@@ -1,3 +1,4 @@
+import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
 import {
   NavigationContainerRefWithCurrent,
   createNavigationContainerRef,
@@ -7,7 +8,9 @@ import {
   DrawerActions,
 } from '@react-navigation/native';
 import React from 'react';
+import {NavioEmitter} from './navio-emitter';
 import {
+  BaseOptions,
   ContentKeys,
   TDrawersData,
   TModalData,
@@ -35,8 +38,11 @@ export class NavioNavigation<
 > {
   protected navRef: NavigationContainerRefWithCurrent<any>;
   protected navIsReadyRef: React.MutableRefObject<boolean | null>;
+  private __emitter: NavioEmitter;
 
-  constructor() {
+  constructor(emitter: NavioEmitter) {
+    this.__emitter = emitter;
+
     this.navRef = createNavigationContainerRef<any>();
     this.navIsReadyRef = React.createRef<boolean>();
   }
@@ -200,6 +206,21 @@ export class NavioNavigation<
         if (self.navIsReady) {
           self.navRef.current?.dispatch(TabActions.jumpTo(name as string));
         }
+      },
+
+      /**
+       * `updateOptions(...)` action updates provided tab's options.
+       *
+       * Tips: It can be used to update badge count.
+       *
+       * @param name name of the tab
+       * @param options `BaseOptions<BottomTabNavigationOptions>` options for the tab.
+       */
+      updateOptions<T extends TabsContentName>(
+        name: T,
+        options: BaseOptions<BottomTabNavigationOptions>,
+      ) {
+        self.__emitter.emit('tabs.updateOptions', {name, options});
       },
 
       /**

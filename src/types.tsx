@@ -34,11 +34,11 @@ export type TTabContentData<ScreensName, StacksName> = {
   stack: TStackDefinition<ScreensName, StacksName>;
   options?: BaseOptions<BottomTabNavigationOptions>;
 };
+export type TTabsContentValue<ScreensName, StacksName> =
+  | TStackDefinition<ScreensName, StacksName>
+  | TTabContentData<ScreensName, StacksName>;
 export type TTabsData<ScreensName, StacksName> = {
-  content: Record<
-    string,
-    TStackDefinition<ScreensName, StacksName> | TTabContentData<ScreensName, StacksName>
-  >;
+  content: Record<string, TTabsContentValue<ScreensName, StacksName>>;
   navigatorProps?: any; // TODO BottomTabNavigatorProps doesn't exist :(
 };
 export type TModalData<ScreensName, StacksName> = TStackDefinition<ScreensName, StacksName>;

@@ -5,7 +5,7 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import {createDrawerNavigator, DrawerNavigationOptions} from '@react-navigation/drawer';
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {NavioNavigation} from './navio-navigation';
 import {
   TScreenData,
@@ -26,7 +26,9 @@ import {
   TTabContentData,
   TDrawerContentData,
   RootSetAs,
+  TTabsContentValue,
 } from './types';
+import {NavioEmitter} from './navio-emitter';
 
 export class Navio<
   ScreensName extends string,
@@ -128,6 +130,7 @@ export class Navio<
     Record<DrawersName, DrawersData>,
     RootName
   >;
+  private emitter: NavioEmitter;
 
   // ========
   // | Init |
@@ -142,7 +145,9 @@ export class Navio<
       RootName
     >,
   ) {
-    super();
+    const __emitter = new NavioEmitter();
+    super(__emitter);
+    this.emitter = __emitter;
 
     this.layout = data;
   }
@@ -348,7 +353,7 @@ export class Navio<
   private Tabs: React.FC<{
     tabsDef: TTabsDefinition<TabsName> | undefined;
   }> = ({tabsDef}) => {
-    const {tabs, hooks, defaultOptions} = this.layout;
+    const {tabs, hooks} = this.layout;
     if (!tabs) {
       this.log('No tabs registered');
       return <></>;
@@ -366,36 +371,66 @@ export class Navio<
 
     // -- building navigator
     const Tabs = createBottomTabNavigator();
-    const TabsScreensMemo = useMemo(() => {
-      const tContent = currentTabs.content;
-      const tContentKeys: TabsContentName[] = Object.keys(currentTabs.content) as TabsContentName[];
-      return tContentKeys.map(tck => {
-        const key = String(tck) as string; // tabs content key
-        const tcs = tContent[key] as any; // tabs content stack definition
-        const stackDef =
-          typeof tcs === 'object' && tcs['stack']
-            ? (tcs as TTabContentData<ScreensName, StacksName>).stack
-            : (tcs as TStackDefinition<ScreensName, StacksName>);
-
-        // component
-        const C = () => this.Stack({stackDef});
-
-        // options
-        const defaultOpts = defaultOptions?.tab ?? {};
-        const tcsOpts = tcs?.options ?? {};
-        const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
-          // navio.defaultOptions.tab
-          ...(typeof defaultOpts === 'function' ? defaultOpts(props) : defaultOpts),
-          // tab-based options
-          ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
-        }); // must be function. merge options from buildNavio. also providing default options
-
-        // screen
-        return <Tabs.Screen key={key} name={key} component={C} options={Opts} />;
-      });
-    }, [tabs, currentTabs]);
+    const TabsScreensMemo = useMemo(
+      () =>
+        Object.keys(currentTabs.content).map(key =>
+          this.TabsScreen({
+            key,
+            Navigator: Tabs,
+            content: currentTabs.content[key],
+          }),
+        ),
+      [tabs, Tabs, currentTabs],
+    );
 
     return <Tabs.Navigator {...currentTabs.navigatorProps}>{TabsScreensMemo}</Tabs.Navigator>;
+  };
+
+  private TabsScreen: React.FC<{
+    Navigator: ReturnType<typeof createBottomTabNavigator>;
+    key: string;
+    content: TTabsContentValue<ScreensName, StacksName>;
+  }> = ({Navigator, key, content}) => {
+    const {defaultOptions} = this.layout;
+    const tcs = content as any;
+
+    const stackDef =
+      typeof tcs === 'object' && tcs['stack']
+        ? (tcs as TTabContentData<ScreensName, StacksName>).stack
+        : (tcs as TStackDefinition<ScreensName, StacksName>);
+
+    // state
+    const [updatedOpts, setUpdatedOpts] = useState<Function | object>();
+
+    // effects
+    useEffect(() => {
+      // subscribe to listeners. if updateOptions was triggered, then we add options
+      this.emitter.on('tabs.updateOptions', params => {
+        if (!params) return;
+
+        const {name, options} = params;
+        if (tcs === name) {
+          setUpdatedOpts(options);
+        }
+      });
+    }, []);
+
+    // component
+    const C = () => this.Stack({stackDef});
+
+    // options
+    const defaultOpts = defaultOptions?.tab ?? {};
+    const tcsOpts = tcs?.options ?? {};
+    const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
+      // navio.defaultOptions.tab
+      ...(typeof defaultOpts === 'function' ? defaultOpts(props) : defaultOpts),
+      // tab-based options
+      ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
+      // from updateOptions event
+      ...(typeof updatedOpts === 'function' ? updatedOpts(props) : updatedOpts),
+    }); // must be function. merge options from buildNavio. also providing default options
+
+    return <Navigator.Screen key={key} name={key} component={C} options={Opts} />;
   };
 
   /**
