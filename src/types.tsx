@@ -4,6 +4,7 @@ import {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import {NavigationContainer, ParamListBase, RouteProp} from '@react-navigation/native';
 import {DrawerNavigationOptions} from '@react-navigation/drawer';
 import {NativeStackNavigatorProps} from '@react-navigation/native-stack/lib/typescript/src/types';
+import {List, Union, Any, Boolean} from 'ts-toolbelt';
 
 export type Keys<T> = keyof T;
 export type ContentKeys<T extends {content: any}> = Keys<T['content']>;
@@ -28,18 +29,30 @@ export type TStackDataObj<ScreenName> = {
   navigatorProps?: NativeStackNavigatorProps;
 };
 export type TStackData<ScreenName> = ScreenName[] | TStackDataObj<ScreenName>;
-export type TTabsData<ScreenName, StackName> = {
-  content: Record<string, TStackDefinition<ScreenName, StackName>>;
+export type TTabContentData<ScreenName, StackName> = {
+  stack: TStackDefinition<ScreenName, StackName>;
   options?: BaseOptions<BottomTabNavigationOptions>;
+};
+export type TTabsData<ScreenName, StackName> = {
+  content: Record<
+    string,
+    TStackDefinition<ScreenName, StackName> | TTabContentData<ScreenName, StackName>
+  >;
   navigatorProps?: any; // TODO BottomTabNavigatorProps doesn't exist :(
 };
 export type TModalData<ScreenName, StackName> = TStackDefinition<ScreenName, StackName>;
-export type TDrawerData<ScreenName, StackName> = {
-  content: Record<string, TStackDefinition<ScreenName, StackName>>;
+export type TDrawerContentData<ScreenName, StackName> = {
+  stack: TStackDefinition<ScreenName, StackName>;
   options?: BaseOptions<DrawerNavigationOptions>;
+};
+export type TDrawersData<ScreenName, StackName> = {
+  content: Record<
+    string,
+    TStackDefinition<ScreenName, StackName> | TDrawerContentData<ScreenName, StackName>
+  >;
   navigatorProps?: any; // TODO DrawerNavigatorProps doesn't exist :(
 };
-export type TRootName<StackName, TabsName, DrawerName> = TabsName | StackName | DrawerName;
+export type TRootName<StackName, TabsName, DrawersName> = TabsName | StackName | DrawersName;
 export type ExtractProps<Type> = Type extends React.FC<infer X> ? X : never;
 
 export type Layout<
@@ -82,7 +95,7 @@ export type Layout<
 
   /**
    * `(optional)`
-   * Root name to start the app with. Possible values `'Tabs' | any of stack`.
+   * Root name to start the app with. Possible values `any of tabs, stacks, drawers names`.
    */
   root?: RootName;
 

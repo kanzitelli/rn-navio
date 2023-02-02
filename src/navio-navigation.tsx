@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import {
   ContentKeys,
-  TDrawerData,
+  TDrawersData,
   TModalData,
   TRootName,
   TScreenData,
@@ -22,20 +22,20 @@ export class NavioNavigation<
   StackName extends string,
   TabsName extends string,
   ModalName extends string,
-  DrawerName extends string,
+  DrawersName extends string,
   //
   ScreenData extends TScreenData,
   StackData extends TStackData<ScreenName>,
   TabsData extends TTabsData<ScreenName, StackName>,
   ModalData extends TModalData<ScreenName, StackName>,
-  DrawerData extends TDrawerData<ScreenName, StackName>,
+  DrawersData extends TDrawersData<ScreenName, StackName>,
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
-  DrawerContentName extends ContentKeys<DrawerData> = ContentKeys<DrawerData>,
-  RootName extends TRootName<StackName, TabsName, DrawerName> = TRootName<
+  DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
+  RootName extends TRootName<StackName, TabsName, DrawersName> = TRootName<
     StackName,
     TabsName,
-    DrawerName
+    DrawersName
   >,
 > {
   protected navRef: NavigationContainerRefWithCurrent<any>;
@@ -108,7 +108,7 @@ export class NavioNavigation<
    *
    * Tips: It can be used to switch between Auth and App stacks.
    *
-   * @param name 'Tabs' | StackName | DrawerName
+   * @param name TabsName | StackName | DrawersName
    */
   setRoot<T extends RootName>(name: T) {
     if (this.navIsReady) {
@@ -281,7 +281,7 @@ export class NavioNavigation<
        *
        * @param name StackName
        */
-      jumpTo<T extends DrawerContentName>(name: T) {
+      jumpTo<T extends DrawersContentName>(name: T) {
         if (self.navIsReady) {
           self.navRef.current?.dispatch(DrawerActions.jumpTo(name as string));
         }

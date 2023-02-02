@@ -22,9 +22,9 @@
   },
   "peerDependencies": {
     "@react-navigation/bottom-tabs": "^6.4.0",
+    "@react-navigation/drawer": "^6.5.8",
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/native-stack": "^6.9.0",
-    "@react-navigation/drawer": "^6.5.8",
     "react": "*",
     "react-native": "*"
   },

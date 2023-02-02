@@ -18,12 +18,13 @@ import {
   NavioScreen,
   BaseOptions,
   RootProps,
-  TStackDataObj,
-  TDrawerData,
-  TDrawerDefinition,
-  Keys,
-  TTabsDefinition,
   ContentKeys,
+  TStackDataObj,
+  TDrawersData,
+  TDrawerDefinition,
+  TTabsDefinition,
+  TTabContentData,
+  TDrawerContentData,
 } from './types';
 
 export class Navio<
@@ -31,34 +32,34 @@ export class Navio<
   StackName extends string,
   TabsName extends string,
   ModalName extends string,
-  DrawerName extends string,
+  DrawersName extends string,
   //
   ScreenData extends TScreenData,
   StackData extends TStackData<ScreenName>,
   TabsData extends TTabsData<ScreenName, StackName>,
   ModalData extends TModalData<ScreenName, StackName>,
-  DrawerData extends TDrawerData<ScreenName, StackName>,
+  DrawersData extends TDrawersData<ScreenName, StackName>,
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
-  DrawerContentName extends ContentKeys<DrawerData> = ContentKeys<DrawerData>,
-  RootName extends TRootName<StackName, TabsName, DrawerName> = TRootName<
+  DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
+  RootName extends TRootName<StackName, TabsName, DrawersName> = TRootName<
     StackName,
     TabsName,
-    DrawerName
+    DrawersName
   >,
 > extends NavioNavigation<
   ScreenName,
   StackName,
   TabsName,
   ModalName,
-  DrawerName,
+  DrawersName,
   ScreenData,
   StackData,
   TabsData,
   ModalData,
-  DrawerData,
+  DrawersData,
   TabsContentName,
-  DrawerContentName,
+  DrawersContentName,
   RootName
 > {
   static build<
@@ -66,20 +67,20 @@ export class Navio<
     StackName extends string,
     TabsName extends string,
     ModalName extends string,
-    DrawerName extends string,
+    DrawersName extends string,
     //
     ScreenData extends TScreenData,
     StackData extends TStackData<ScreenName>,
     TabsData extends TTabsData<ScreenName, StackName>,
     ModalData extends TModalData<ScreenName, StackName>,
-    DrawerData extends TDrawerData<ScreenName, StackName>,
+    DrawersData extends TDrawersData<ScreenName, StackName>,
     //
     TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
-    DrawerContentName extends ContentKeys<DrawerData> = ContentKeys<DrawerData>,
-    RootName extends TRootName<StackName, TabsName, DrawerName> = TRootName<
+    DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
+    RootName extends TRootName<StackName, TabsName, DrawersName> = TRootName<
       StackName,
       TabsName,
-      DrawerName
+      DrawersName
     >,
   >(
     data: Layout<
@@ -87,7 +88,7 @@ export class Navio<
       Record<StackName, StackData>,
       Record<TabsName, TabsData>,
       Record<ModalName, ModalData>,
-      Record<DrawerName, DrawerData>,
+      Record<DrawersName, DrawersData>,
       RootName
     >,
   ) {
@@ -96,14 +97,14 @@ export class Navio<
       StackName,
       TabsName,
       ModalName,
-      DrawerName,
+      DrawersName,
       ScreenData,
       StackData,
       TabsData,
       ModalData,
-      DrawerData,
+      DrawersData,
       TabsContentName,
-      DrawerContentName,
+      DrawersContentName,
       RootName
     >(data);
     return _navio;
@@ -117,7 +118,7 @@ export class Navio<
     Record<StackName, StackData>,
     Record<TabsName, TabsData>,
     Record<ModalName, ModalData>,
-    Record<DrawerName, DrawerData>,
+    Record<DrawersName, DrawersData>,
     RootName
   >;
 
@@ -130,7 +131,7 @@ export class Navio<
       Record<StackName, StackData>,
       Record<TabsName, TabsData>,
       Record<ModalName, ModalData>,
-      Record<DrawerName, DrawerData>,
+      Record<DrawersName, DrawersData>,
       RootName
     >,
   ) {
@@ -244,7 +245,7 @@ export class Navio<
   };
 
   private Drawer: React.FC<{
-    drawerDef: TDrawerDefinition<DrawerName> | undefined;
+    drawerDef: TDrawerDefinition<DrawersName> | undefined;
   }> = ({drawerDef}) => {
     const {drawers, hooks} = this.layout;
     if (!drawers) {
@@ -252,7 +253,7 @@ export class Navio<
       return <></>;
     }
 
-    const currentDrawer: TDrawerData<ScreenName, StackName> | undefined =
+    const currentDrawer: TDrawersData<ScreenName, StackName> | undefined =
       typeof drawerDef === 'string' ? drawers[drawerDef] : undefined;
     if (!currentDrawer) {
       this.log('No drawer found');
@@ -266,25 +267,28 @@ export class Navio<
     const Drawer = createDrawerNavigator();
     const DrawerScreensMemo = useMemo(() => {
       const dContent = currentDrawer.content;
-      const dContentKeys: DrawerContentName[] = Object.keys(
+      const dContentKeys: DrawersContentName[] = Object.keys(
         currentDrawer.content,
-      ) as DrawerContentName[];
+      ) as DrawersContentName[];
       return dContentKeys.map(dck => {
         const key = String(dck) as string; // drawer content key
-        const dcsDef = dContent[key]; // drawer content stack definition
+        const dcs = dContent[key] as any; // drawer content stack definition
+        const stackDef =
+          typeof dcs === 'object' && dcs['content']
+            ? (dcs as TDrawerContentData<ScreenName, StackName>).stack
+            : (dcs as TStackDefinition<ScreenName, StackName>);
 
         // component
-        const C = () => this.Stack({stackDef: dcsDef});
+        const C = () => this.Stack({stackDef});
 
         // options
         const defaultOptions = this.layout.defaultOptions?.drawer ?? {};
+        const dcsOpts = dcs?.options ?? {};
         const Opts: BaseOptions<DrawerNavigationOptions> = props => ({
           // navio.defaultOptions.drawer
           ...(typeof defaultOptions === 'function' ? defaultOptions(props) : defaultOptions),
-          // navio.drawers.Name.options
-          ...(typeof currentDrawer.options === 'function'
-            ? currentDrawer.options(props)
-            : currentDrawer.options),
+          // drawer-based options
+          ...(typeof dcsOpts === 'function' ? dcsOpts(props) : dcsOpts),
         }); // must be function. merge options from buildNavio. also providing default options
 
         // screen
@@ -323,20 +327,23 @@ export class Navio<
       const tContentKeys: TabsContentName[] = Object.keys(currentTabs.content) as TabsContentName[];
       return tContentKeys.map(tck => {
         const key = String(tck) as string; // tabs content key
-        const tcsDef = tContent[key as TabsName]; // tabs content stack definition
+        const tcs = tContent[key] as any; // tabs content stack definition
+        const stackDef =
+          typeof tcs === 'object' && tcs['content']
+            ? (tcs as TTabContentData<ScreenName, StackName>).stack
+            : (tcs as TStackDefinition<ScreenName, StackName>);
 
         // component
-        const C = () => this.Stack({stackDef: tcsDef});
+        const C = () => this.Stack({stackDef});
 
         // options
         const defaultOpts = defaultOptions?.tab ?? {};
+        const tcsOpts = tcs?.options ?? {};
         const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
           // navio.defaultOptions.tab
           ...(typeof defaultOpts === 'function' ? defaultOpts(props) : defaultOpts),
-          // navio.tabs.Name.options
-          ...(typeof currentTabs.options === 'function'
-            ? currentTabs.options(props)
-            : currentTabs.options),
+          // tab-based options
+          ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
         }); // must be function. merge options from buildNavio. also providing default options
 
         // screen
@@ -421,7 +428,7 @@ export class Navio<
       const drawersKeys = Object.keys(drawers);
       return drawersKeys.map(dk => {
         const key = String(dk) as string;
-        const C = () => this.Drawer({drawerDef: dk as DrawerName});
+        const C = () => this.Drawer({drawerDef: dk as DrawersName});
         return <RootStack.Screen key={key} name={key} component={C} />;
       });
     }, [drawers]);
