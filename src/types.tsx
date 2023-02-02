@@ -4,7 +4,6 @@ import {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import {NavigationContainer, ParamListBase, RouteProp} from '@react-navigation/native';
 import {DrawerNavigationOptions} from '@react-navigation/drawer';
 import {NativeStackNavigatorProps} from '@react-navigation/native-stack/lib/typescript/src/types';
-import {List, Union, Any, Boolean} from 'ts-toolbelt';
 
 export type Keys<T> = keyof T;
 export type ContentKeys<T extends {content: any}> = Keys<T['content']>;
@@ -123,5 +122,5 @@ export type NavioScreen<Props = {}> = React.FC<PropsWithChildren<Props>> & {
 // Layouts
 export type RootProps<RootName extends string> = {
   navigationContainerProps?: Omit<ExtractProps<typeof NavigationContainer>, 'children'>;
-  initialRouteName?: RootName; // TODO must be observable
+  initialRouteName?: RootName;
 };
