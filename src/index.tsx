@@ -5,8 +5,6 @@ export {Navio};
 export type {NavioScreen};
 
 // 0.0.2 todos
-// [ ] test on more use cases
-// [ ] make better Navio section in the app
 // [ ] prepare docs
 
 // minor issues
@@ -45,6 +43,7 @@ export type {NavioScreen};
 //   },
 //   root: 'MainDrawer',
 // });
+// navio.tabs.updateOptions('One', {'tabBarBadge': '123'})
 // navio.setRoot('stacks', 'MainStack');
 // navio.Root({'initialRouteName':''})
 // navio.drawers.setRoot('')
