@@ -18,22 +18,22 @@ import {
 } from './types';
 
 export class NavioNavigation<
-  ScreenName extends string,
-  StackName extends string,
+  ScreensName extends string,
+  StacksName extends string,
   TabsName extends string,
-  ModalName extends string,
+  ModalsName extends string,
   DrawersName extends string,
   //
-  ScreenData extends TScreenData,
-  StackData extends TStackData<ScreenName>,
-  TabsData extends TTabsData<ScreenName, StackName>,
-  ModalData extends TModalData<ScreenName, StackName>,
-  DrawersData extends TDrawersData<ScreenName, StackName>,
+  ScreensData extends TScreenData,
+  StacksData extends TStackData<ScreensName>,
+  TabsData extends TTabsData<ScreensName, StacksName>,
+  ModalsData extends TModalData<ScreensName, StacksName>,
+  DrawersData extends TDrawersData<ScreensName, StacksName>,
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
   DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
-  RootName extends TRootName<StackName, TabsName, DrawersName> = TRootName<
-    StackName,
+  RootName extends TRootName<StacksName, TabsName, DrawersName> = TRootName<
+    StacksName,
     TabsName,
     DrawersName
   >,
@@ -63,7 +63,7 @@ export class NavioNavigation<
   // | Methods |
   // ===========
   protected navigate = <
-    T extends ScreenName | StackName | TabsName | ModalName,
+    T extends ScreensName | StacksName | TabsName | ModalsName,
     Params extends object | undefined,
   >(
     name: T,
@@ -85,10 +85,10 @@ export class NavioNavigation<
   /**
    * `push(...)` action adds a route on top of the stack and navigates forward to it.
    *
-   * @param name ScreenName
+   * @param name ScreensName
    * @param params Params
    */
-  push<T extends ScreenName, Params extends object | undefined>(name: T, params?: Params) {
+  push<T extends ScreensName, Params extends object | undefined>(name: T, params?: Params) {
     if (this.navIsReady) {
       this.navRef.current?.dispatch(StackActions.push(name as string, params));
     }
@@ -136,9 +136,9 @@ export class NavioNavigation<
        *
        * Tips: It will "hide" tabs.
        *
-       * @param name StackName
+       * @param name StacksName
        */
-      push<T extends StackName>(name: T) {
+      push<T extends StacksName>(name: T) {
         if (self.navIsReady) {
           self.navigate(name);
         }
@@ -169,9 +169,9 @@ export class NavioNavigation<
        *
        * Tips: It can be used to switch between Auth and App stacks.
        *
-       * @param name StackName
+       * @param name StacksName
        */
-      setRoot<T extends StackName>(name: T) {
+      setRoot<T extends StacksName>(name: T) {
         if (self.navIsReady) {
           self.navRef.current?.dispatch(
             CommonActions.reset({
@@ -242,9 +242,9 @@ export class NavioNavigation<
       /**
        * `show(...)` action can be used to show an existing modal.
        *
-       * @param name ModalName
+       * @param name ModalsName
        */
-      show<T extends ModalName>(name: T) {
+      show<T extends ModalsName>(name: T) {
         if (self.navIsReady) {
           self.navigate(name);
         }
@@ -295,7 +295,7 @@ export class NavioNavigation<
       /**
        * `jumpTo(...)` action can be used to jump to an existing route in the drawer navigator.
        *
-       * @param name StackName
+       * @param name StacksName
        */
       jumpTo<T extends DrawersContentName>(name: T) {
         if (self.navIsReady) {
