@@ -14,7 +14,7 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import {createDrawerNavigator, DrawerNavigationOptions} from '@react-navigation/drawer';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   TScreenData,
   TStackData,
@@ -657,6 +657,19 @@ export class Navio<
     // -- running hooks
     if (hooks) for (const h of hooks) if (h) h();
 
+    // effects
+    const [updatedOptions, setUpdatedOptions] = useState<{
+      name: string;
+      options: BaseOptions<BottomTabNavigationOptions>;
+    }>();
+    useEffect(() => {
+      // subscribe to listeners. if updateOptions was triggered, then we add options
+      this.emitter.on('tabs.updateOptions', params => {
+        if (!params) return;
+        setUpdatedOptions(params);
+      });
+    }, []);
+
     // -- building navigator
     const Tabs = createBottomTabNavigator();
     return (
@@ -666,6 +679,7 @@ export class Navio<
             key,
             Navigator: Tabs,
             content: currentTabs.content[key],
+            updatedOptions,
           }),
         )}
       </Tabs.Navigator>
@@ -676,7 +690,8 @@ export class Navio<
     Navigator: ReturnType<typeof createBottomTabNavigator>;
     key: string;
     content: TTabsContentValue<ScreensName, StacksName>;
-  }> = ({Navigator, key, content}) => {
+    updatedOptions?: {name: string; options: BaseOptions<BottomTabNavigationOptions>};
+  }> = ({Navigator, key, content, updatedOptions}) => {
     const {defaultOptions} = this.layout;
     const tcs = content as any;
 
@@ -685,34 +700,19 @@ export class Navio<
         ? (tcs as TTabContentData<ScreensName, StacksName>).stack
         : (tcs as TStackDefinition<ScreensName, StacksName>);
 
-    // state
-    const [updatedOpts, setUpdatedOpts] = useState<Function | object>();
-
-    // effects
-    useEffect(() => {
-      // subscribe to listeners. if updateOptions was triggered, then we add options
-      this.emitter.on('tabs.updateOptions', params => {
-        if (!params) return;
-
-        const {name, options} = params;
-        if (tcs === name) {
-          setUpdatedOpts(options);
-        }
-      });
-    }, []);
-
     // component
     const C = () => this.Stack({stackDef});
 
     // options
     const defaultOpts = defaultOptions?.tab ?? {};
     const tcsOpts = tcs?.options ?? {};
+    const updatedOpts = key === updatedOptions?.name ? updatedOptions.options : {};
     const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
       // navio.defaultOptions.tab
       ...(typeof defaultOpts === 'function' ? defaultOpts(props) : defaultOpts),
       // tab-based options
       ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
-      // from updateOptions event
+      // from updatedOptions event
       ...(typeof updatedOpts === 'function' ? updatedOpts(props) : updatedOpts),
     }); // must be function. merge options from buildNavio. also providing default options
 
