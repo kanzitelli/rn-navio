@@ -32,11 +32,6 @@ export class NavioNavigation<
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
   DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
-  RootName extends TRootName<StacksName, TabsName, DrawersName> = TRootName<
-    StacksName,
-    TabsName,
-    DrawersName
-  >,
 > {
   protected navRef: NavigationContainerRefWithCurrent<any>;
   protected navIsReadyRef: React.MutableRefObject<boolean | null>;

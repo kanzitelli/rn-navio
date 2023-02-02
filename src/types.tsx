@@ -8,6 +8,8 @@ import {NativeStackNavigatorProps} from '@react-navigation/native-stack/lib/type
 export type Keys<T> = keyof T;
 export type ContentKeys<T extends {content: any}> = Keys<T['content']>;
 
+export type RootSetAs = keyof Pick<Layout, 'stacks' | 'tabs' | 'drawers'>;
+
 export type BaseOptions<Return = NativeStackNavigationOptions> =
   | Return
   | ((props?: {route?: RouteProp<ParamListBase, string>; navigation?: any}) => Return);

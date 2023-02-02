@@ -25,6 +25,7 @@ import {
   TTabsDefinition,
   TTabContentData,
   TDrawerContentData,
+  RootSetAs,
 } from './types';
 
 export class Navio<
@@ -42,11 +43,17 @@ export class Navio<
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
   DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
+  //
   RootName extends TRootName<StacksName, TabsName, DrawersName> = TRootName<
     StacksName,
     TabsName,
     DrawersName
   >,
+  RootSetAsNames extends Record<RootSetAs, string> = {
+    stacks: StacksName;
+    tabs: TabsName;
+    drawers: DrawersName;
+  },
 > extends NavioNavigation<
   ScreensName,
   StacksName,
@@ -59,8 +66,7 @@ export class Navio<
   ModalsData,
   DrawersData,
   TabsContentName,
-  DrawersContentName,
-  RootName
+  DrawersContentName
 > {
   static build<
     ScreensName extends string,
@@ -77,6 +83,7 @@ export class Navio<
     //
     TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
     DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
+    //
     RootName extends TRootName<StacksName, TabsName, DrawersName> = TRootName<
       StacksName,
       TabsName,
@@ -143,6 +150,24 @@ export class Navio<
   // ===========
   // | Methods |
   // ===========
+  /**
+   * `setRoot(as, name)` action sets a new app root.
+   *
+   * Tips: It can be used to switch between Tabs, Drawers, and Stacks.
+   *
+   * @param as used to define the type of the app layout. Possible values: 'stacks' | 'tabs' | 'drawers'.
+   * @param name will be autocompleted based on `as` value and current layout configuration.
+   */
+  setRoot<SetAs extends RootSetAs = RootSetAs, RouteName extends string = RootSetAsNames[SetAs]>(
+    as: SetAs,
+    routeName: RouteName,
+  ) {
+    if (as) {
+      this.__setRoot(routeName);
+    }
+  }
+
+  // Private
   private log(message: string, type: 'log' | 'warn' | 'error' = 'log') {
     console[type](`[navio] ${message}`);
   }

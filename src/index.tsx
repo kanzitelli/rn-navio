@@ -45,5 +45,6 @@ export type {NavioScreen};
 //   },
 //   root: 'MainDrawer',
 // });
+// navio.setRoot('stacks', 'MainStack');
 // navio.Root({'initialRouteName':''})
 // navio.drawers.setRoot('')
