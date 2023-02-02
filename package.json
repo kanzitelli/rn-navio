@@ -1,6 +1,6 @@
 {
   "name": "rn-navio",
-  "version": "0.0.2-rc.15",
+  "version": "0.0.2-rc.16",
   "description": "🧭 Navio - navigation library for React Native (Expo). Build the app's layout in one place and use benefits of types predictibility. Built on top of React Navigation (RNN will be added soon).",
   "author": "Batyr <dev@batyr.io>",
   "homepage": "https://github.com/kanzitelli/rn-navio",

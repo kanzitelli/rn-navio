@@ -129,6 +129,7 @@ export class Navio<
   private navRef: NavigationContainerRefWithCurrent<any>;
   private navIsReadyRef: React.MutableRefObject<boolean | null>;
   private emitter: NavioEmitter;
+  private tabUpdatedOptions: TTabUpdatedOptions;
 
   // ========
   // | Init |
@@ -148,6 +149,7 @@ export class Navio<
 
     // Layout
     this.layout = data;
+    this.tabUpdatedOptions = {name: '', options: {}};
 
     // Navigation
     this.navRef = createNavigationContainerRef<any>();
@@ -735,9 +737,14 @@ export class Navio<
       // -- subscribing to emitter events
       this.emitter.on('tabs.updateOptions', params => {
         if (!params) return;
-        setTabUpdatedOptions(params);
+        // setTabUpdatedOptions(params);
+        this.tabUpdatedOptions = params;
       });
     }, [this.emitter]);
+
+    useEffect(() => {
+      console.log(tabUpdatedOptions);
+    }, [this.tabUpdatedOptions]);
 
     // Internal methods
     const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
