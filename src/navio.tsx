@@ -28,80 +28,80 @@ import {
 } from './types';
 
 export class Navio<
-  ScreenName extends string,
-  StackName extends string,
+  ScreensName extends string,
+  StacksName extends string,
   TabsName extends string,
-  ModalName extends string,
+  ModalsName extends string,
   DrawersName extends string,
   //
-  ScreenData extends TScreenData,
-  StackData extends TStackData<ScreenName>,
-  TabsData extends TTabsData<ScreenName, StackName>,
-  ModalData extends TModalData<ScreenName, StackName>,
-  DrawersData extends TDrawersData<ScreenName, StackName>,
+  ScreensData extends TScreenData,
+  StacksData extends TStackData<ScreensName>,
+  TabsData extends TTabsData<ScreensName, StacksName>,
+  ModalsData extends TModalData<ScreensName, StacksName>,
+  DrawersData extends TDrawersData<ScreensName, StacksName>,
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
   DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
-  RootName extends TRootName<StackName, TabsName, DrawersName> = TRootName<
-    StackName,
+  RootName extends TRootName<StacksName, TabsName, DrawersName> = TRootName<
+    StacksName,
     TabsName,
     DrawersName
   >,
 > extends NavioNavigation<
-  ScreenName,
-  StackName,
+  ScreensName,
+  StacksName,
   TabsName,
-  ModalName,
+  ModalsName,
   DrawersName,
-  ScreenData,
-  StackData,
+  ScreensData,
+  StacksData,
   TabsData,
-  ModalData,
+  ModalsData,
   DrawersData,
   TabsContentName,
   DrawersContentName,
   RootName
 > {
   static build<
-    ScreenName extends string,
-    StackName extends string,
+    ScreensName extends string,
+    StacksName extends string,
     TabsName extends string,
-    ModalName extends string,
+    ModalsName extends string,
     DrawersName extends string,
     //
-    ScreenData extends TScreenData,
-    StackData extends TStackData<ScreenName>,
-    TabsData extends TTabsData<ScreenName, StackName>,
-    ModalData extends TModalData<ScreenName, StackName>,
-    DrawersData extends TDrawersData<ScreenName, StackName>,
+    ScreensData extends TScreenData,
+    StacksData extends TStackData<ScreensName>,
+    TabsData extends TTabsData<ScreensName, StacksName>,
+    ModalsData extends TModalData<ScreensName, StacksName>,
+    DrawersData extends TDrawersData<ScreensName, StacksName>,
     //
     TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
     DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
-    RootName extends TRootName<StackName, TabsName, DrawersName> = TRootName<
-      StackName,
+    RootName extends TRootName<StacksName, TabsName, DrawersName> = TRootName<
+      StacksName,
       TabsName,
       DrawersName
     >,
   >(
     data: Layout<
-      Record<ScreenName, ScreenData>,
-      Record<StackName, StackData>,
+      Record<ScreensName, ScreensData>,
+      Record<StacksName, StacksData>,
       Record<TabsName, TabsData>,
-      Record<ModalName, ModalData>,
+      Record<ModalsName, ModalsData>,
       Record<DrawersName, DrawersData>,
       RootName
     >,
   ) {
     const _navio = new Navio<
-      ScreenName,
-      StackName,
+      ScreensName,
+      StacksName,
       TabsName,
-      ModalName,
+      ModalsName,
       DrawersName,
-      ScreenData,
-      StackData,
+      ScreensData,
+      StacksData,
       TabsData,
-      ModalData,
+      ModalsData,
       DrawersData,
       TabsContentName,
       DrawersContentName,
@@ -114,10 +114,10 @@ export class Navio<
   // | Vars |
   // ========
   private layout: Layout<
-    Record<ScreenName, ScreenData>,
-    Record<StackName, StackData>,
+    Record<ScreensName, ScreensData>,
+    Record<StacksName, StacksData>,
     Record<TabsName, TabsData>,
-    Record<ModalName, ModalData>,
+    Record<ModalsName, ModalsData>,
     Record<DrawersName, DrawersData>,
     RootName
   >;
@@ -127,10 +127,10 @@ export class Navio<
   // ========
   constructor(
     data: Layout<
-      Record<ScreenName, ScreenData>,
-      Record<StackName, StackData>,
+      Record<ScreensName, ScreensData>,
+      Record<StacksName, StacksData>,
       Record<TabsName, TabsData>,
-      Record<ModalName, ModalData>,
+      Record<ModalsName, ModalsData>,
       Record<DrawersName, DrawersData>,
       RootName
     >,
@@ -141,10 +141,29 @@ export class Navio<
   }
 
   // ===========
+  // | Methods |
+  // ===========
+  private log(message: string, type: 'log' | 'warn' | 'error' = 'log') {
+    console[type](`[navio] ${message}`);
+  }
+
+  private __setRoot(routeName: string) {
+    if (this.layout.stacks && this.layout.stacks[routeName as StacksName]) {
+      this.stacks.setRoot(routeName as StacksName);
+    }
+    if (this.layout.tabs && this.layout.tabs[routeName as TabsName]) {
+      this.tabs.setRoot(routeName as TabsName);
+    }
+    if (this.layout.drawers && this.layout.drawers[routeName as DrawersName]) {
+      this.drawers.setRoot(routeName as DrawersName);
+    }
+  }
+
+  // ===========
   // | Layouts |
   // ===========
   private Stack: React.FC<{
-    stackDef: TStackDefinition<ScreenName, StackName> | undefined;
+    stackDef: TStackDefinition<ScreensName, StacksName> | undefined;
   }> = ({stackDef}) => {
     if (!stackDef) return null;
     const {screens, stacks, hooks} = this.layout;
@@ -162,17 +181,17 @@ export class Navio<
     const navigatorProps = Array.isArray(stackDef)
       ? // if stackDef is ScreenName[]
         {}
-      : // if stackDev is TStackDataObj
+      : // if stackDev is TStacksDataObj
       typeof stackDef === 'object'
-      ? (stackDef as TStackDataObj<ScreenName>).navigatorProps ?? {}
-      : // if stackDev is StackName -> look into stacks[...]
+      ? (stackDef as TStackDataObj<ScreensName>).navigatorProps ?? {}
+      : // if stackDev is StacksName -> look into stacks[...]
       typeof stackDef === 'string'
       ? // if stacks[name] is ScreenName[]
         Array.isArray(stacks[stackDef])
         ? {}
-        : // if stacks[name] is TStackDataObj
+        : // if stacks[name] is TStacksDataObj
         typeof stacks[stackDef] === 'object'
-        ? (stacks[stackDef] as TStackDataObj<ScreenName>).navigatorProps ?? {}
+        ? (stacks[stackDef] as TStackDataObj<ScreensName>).navigatorProps ?? {}
         : {}
       : {};
 
@@ -182,26 +201,26 @@ export class Navio<
     // -- building navigator
     const Stack = createNativeStackNavigator();
     const StackScreensMemo = useMemo(() => {
-      const screensKeys: ScreenName[] = Array.isArray(stackDef)
+      const screensKeys: ScreensName[] = Array.isArray(stackDef)
         ? // if stackDef is ScreenName[]
           stackDef
-        : // if stackDev is TStackDataObj
+        : // if stackDev is TStacksDataObj
         typeof stackDef === 'object'
-        ? (stackDef as TStackDataObj<ScreenName>).screens ?? []
-        : // if stackDev is StackName -> look into stacks[...]
+        ? (stackDef as TStackDataObj<ScreensName>).screens ?? []
+        : // if stackDev is StacksName -> look into stacks[...]
         typeof stackDef === 'string'
         ? // if stacks[name] is ScreenName[]
           Array.isArray(stacks[stackDef])
-          ? (stacks[stackDef] as ScreenName[])
-          : // if stacks[name] is TStackDataObj
+          ? (stacks[stackDef] as ScreensName[])
+          : // if stacks[name] is TStacksDataObj
           typeof stacks[stackDef] === 'object'
-          ? (stacks[stackDef] as TStackDataObj<ScreenName>).screens ?? []
+          ? (stacks[stackDef] as TStackDataObj<ScreensName>).screens ?? []
           : []
         : [];
 
       return screensKeys.map(sk => {
         const key = String(sk) as string;
-        const screen = screens[key as ScreenName];
+        const screen = screens[key as ScreensName];
 
         // component
         // -- handling when screen is a component or object{component,options}
@@ -253,7 +272,7 @@ export class Navio<
       return <></>;
     }
 
-    const currentDrawer: TDrawersData<ScreenName, StackName> | undefined =
+    const currentDrawer: TDrawersData<ScreensName, StacksName> | undefined =
       typeof drawerDef === 'string' ? drawers[drawerDef] : undefined;
     if (!currentDrawer) {
       this.log('No drawer found');
@@ -275,8 +294,8 @@ export class Navio<
         const dcs = dContent[key] as any; // drawer content stack definition
         const stackDef =
           typeof dcs === 'object' && dcs['content']
-            ? (dcs as TDrawerContentData<ScreenName, StackName>).stack
-            : (dcs as TStackDefinition<ScreenName, StackName>);
+            ? (dcs as TDrawerContentData<ScreensName, StacksName>).stack
+            : (dcs as TStackDefinition<ScreensName, StacksName>);
 
         // component
         const C = () => this.Stack({stackDef});
@@ -310,7 +329,7 @@ export class Navio<
       return <></>;
     }
 
-    const currentTabs: TTabsData<ScreenName, StackName> | undefined =
+    const currentTabs: TTabsData<ScreensName, StacksName> | undefined =
       typeof tabsDef === 'string' ? tabs[tabsDef] : undefined;
     if (!currentTabs) {
       this.log('No tabs found');
@@ -330,8 +349,8 @@ export class Navio<
         const tcs = tContent[key] as any; // tabs content stack definition
         const stackDef =
           typeof tcs === 'object' && tcs['content']
-            ? (tcs as TTabContentData<ScreenName, StackName>).stack
-            : (tcs as TStackDefinition<ScreenName, StackName>);
+            ? (tcs as TTabContentData<ScreensName, StacksName>).stack
+            : (tcs as TStackDefinition<ScreensName, StacksName>);
 
         // component
         const C = () => this.Stack({stackDef});
@@ -367,7 +386,7 @@ export class Navio<
     useEffect(() => {
       // if `initialRouteName` is changed, we set new root
       if (initialRouteName) {
-        this.setRoot(initialRouteName);
+        this.__setRoot(initialRouteName);
       }
     }, [initialRouteName]);
 
@@ -392,7 +411,7 @@ export class Navio<
       const stacksKeys = Object.keys(stacks);
       return stacksKeys.map(sk => {
         const key = String(sk) as string;
-        const C = () => this.Stack({stackDef: stacks[sk as StackName]});
+        const C = () => this.Stack({stackDef: stacks[sk as StacksName]});
         return <RootStack.Screen key={key} name={key} component={C} />;
       });
     }, [stacks]);
@@ -416,7 +435,7 @@ export class Navio<
       const modalsKeys = Object.keys(modals);
       return modalsKeys.map(mk => {
         const key = String(mk) as string;
-        const C = () => this.Stack({stackDef: modals[mk as ModalName]});
+        const C = () => this.Stack({stackDef: modals[mk as ModalsName]});
         return <RootStack.Screen key={key} name={key} component={C} />;
       });
     }, [modals]);
@@ -435,7 +454,7 @@ export class Navio<
 
     // -- generating fake stack (if none [stacks, tabs, drawers] is provided)
     const FakeStackMemo = useMemo(() => {
-      const fakeStackKeys = Object.keys(screens ?? {}) as ScreenName[];
+      const fakeStackKeys = Object.keys(screens ?? {}) as ScreensName[];
       const C = () => {
         if (fakeStackKeys.length > 0) {
           return this.Stack({stackDef: fakeStackKeys});
@@ -481,9 +500,4 @@ export class Navio<
       </NavigationContainer>
     );
   };
-
-  // System
-  private log(message: string, type: 'log' | 'warn' | 'error' = 'log') {
-    console[type](`[navio] ${message}`);
-  }
 }
