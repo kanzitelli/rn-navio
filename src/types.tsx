@@ -41,6 +41,7 @@ export type TTabsData<ScreensName, StacksName> = {
   content: Record<string, TTabsContentValue<ScreensName, StacksName>>;
   navigatorProps?: any; // TODO BottomTabNavigatorProps doesn't exist :(
 };
+export type TTabUpdatedOptions = {name: string; options: BaseOptions<BottomTabNavigationOptions>};
 export type TModalData<ScreensName, StacksName> = TStackDefinition<ScreensName, StacksName>;
 export type TDrawerContentData<ScreensName, StacksName> = {
   stack: TStackDefinition<ScreensName, StacksName>;

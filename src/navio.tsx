@@ -35,6 +35,7 @@ import {
   TDrawerContentData,
   RootSetAs,
   TTabsContentValue,
+  TTabUpdatedOptions,
 } from './types';
 import {NavioEmitter} from './navio-emitter';
 
@@ -640,7 +641,8 @@ export class Navio<
 
   private Tabs: React.FC<{
     tabsDef: TTabsDefinition<TabsName> | undefined;
-  }> = ({tabsDef}) => {
+    tabUpdatedOptions?: TTabUpdatedOptions;
+  }> = ({tabsDef, tabUpdatedOptions}) => {
     const {tabs, hooks} = this.layout;
     if (!tabs) {
       this.log('No tabs registered');
@@ -657,19 +659,6 @@ export class Navio<
     // -- running hooks
     if (hooks) for (const h of hooks) if (h) h();
 
-    // effects
-    const [updatedOptions, setUpdatedOptions] = useState<{
-      name: string;
-      options: BaseOptions<BottomTabNavigationOptions>;
-    }>();
-    useEffect(() => {
-      // subscribe to listeners. if updateOptions was triggered, then we add options
-      this.emitter.on('tabs.updateOptions', params => {
-        if (!params) return;
-        setUpdatedOptions(params);
-      });
-    }, []);
-
     // -- building navigator
     const Tabs = createBottomTabNavigator();
     return (
@@ -679,7 +668,7 @@ export class Navio<
             key,
             Navigator: Tabs,
             content: currentTabs.content[key],
-            updatedOptions,
+            updatedOptions: tabUpdatedOptions,
           }),
         )}
       </Tabs.Navigator>
@@ -690,7 +679,7 @@ export class Navio<
     Navigator: ReturnType<typeof createBottomTabNavigator>;
     key: string;
     content: TTabsContentValue<ScreensName, StacksName>;
-    updatedOptions?: {name: string; options: BaseOptions<BottomTabNavigationOptions>};
+    updatedOptions?: TTabUpdatedOptions;
   }> = ({Navigator, key, content, updatedOptions}) => {
     const {defaultOptions} = this.layout;
     const tcs = content as any;
@@ -731,13 +720,24 @@ export class Navio<
     const appRoot = initialRouteName ?? root;
     const RootStack = createNativeStackNavigator();
 
+    // State
+    const [tabUpdatedOptions, setTabUpdatedOptions] = useState<TTabUpdatedOptions>();
+
     // Effects
     useEffect(() => {
-      // if `initialRouteName` is changed, we set new root
+      // -- changing route if `initialRouteName` was changed
       if (initialRouteName) {
         this.__setRoot(initialRouteName);
       }
     }, [initialRouteName]);
+
+    useEffect(() => {
+      // -- subscribing to emitter events
+      this.emitter.on('tabs.updateOptions', params => {
+        if (!params) return;
+        setTabUpdatedOptions(params);
+      });
+    }, [this.emitter]);
 
     // Internal methods
     const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
@@ -772,10 +772,10 @@ export class Navio<
       const tabsKeys = Object.keys(tabs);
       return tabsKeys.map(dk => {
         const key = String(dk) as string;
-        const C = () => this.Tabs({tabsDef: dk as TabsName});
+        const C = () => this.Tabs({tabsDef: dk as TabsName, tabUpdatedOptions});
         return <RootStack.Screen key={key} name={key} component={C} />;
       });
-    }, [tabs]);
+    }, [tabs, tabUpdatedOptions]);
 
     // -- generating modals
     const ModalsMemo = useMemo(() => {
