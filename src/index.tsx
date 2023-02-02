@@ -4,25 +4,4 @@ import {NavioScreen} from './types';
 export {Navio};
 export type {NavioScreen};
 
-// const navio = Navio.build({
-//   screens: {
-//     Main: {
-//       component: () => {
-//         return <>Main</>;
-//       },
-//       options: {
-//         title: 'Main',
-//       },
-//     },
-//   },
-//   stacks: {
-//     MainStack: {
-//       screens: ['Main'],
-//     },
-//   },
-//   drawers: {
-//     MainDrawer: {
-//       content: [{name: '', stack: ''}],
-//     },
-//   },
-// });
+// TODO There is a problem when there are more than 2 drawers or 2 tabs, then .jumpTo() won't help with autocompletion

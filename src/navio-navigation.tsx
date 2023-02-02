@@ -7,23 +7,36 @@ import {
   DrawerActions,
 } from '@react-navigation/native';
 import React from 'react';
-import {Keys, TDrawerData, TModalData, TRootName, TScreenData, TStackData, TTabData} from './types';
+import {
+  ContentKeys,
+  TDrawerData,
+  TModalData,
+  TRootName,
+  TScreenData,
+  TStackData,
+  TTabsData,
+} from './types';
 
 export class NavioNavigation<
   ScreenName extends string,
   StackName extends string,
-  TabName extends string,
+  TabsName extends string,
   ModalName extends string,
   DrawerName extends string,
-  DrawerContentName extends Keys<DrawerData['content']>,
   //
   ScreenData extends TScreenData,
   StackData extends TStackData<ScreenName>,
-  TabData extends TTabData<ScreenName, StackName>,
+  TabsData extends TTabsData<ScreenName, StackName>,
   ModalData extends TModalData<ScreenName, StackName>,
   DrawerData extends TDrawerData<ScreenName, StackName>,
   //
-  RootName extends TRootName<StackName, DrawerName> = TRootName<StackName, DrawerName>,
+  TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
+  DrawerContentName extends ContentKeys<DrawerData> = ContentKeys<DrawerData>,
+  RootName extends TRootName<StackName, TabsName, DrawerName> = TRootName<
+    StackName,
+    TabsName,
+    DrawerName
+  >,
 > {
   protected navRef: NavigationContainerRefWithCurrent<any>;
   protected navIsReadyRef: React.MutableRefObject<boolean | null>;
@@ -50,7 +63,7 @@ export class NavioNavigation<
   // | Methods |
   // ===========
   protected navigate = <
-    T extends ScreenName | StackName | TabName | ModalName,
+    T extends ScreenName | StackName | TabsName | ModalName,
     Params extends object | undefined,
   >(
     name: T,
@@ -189,7 +202,7 @@ export class NavioNavigation<
        *
        * @param name TabName
        */
-      jumpTo<T extends TabName>(name: T) {
+      jumpTo<T extends TabsContentName>(name: T) {
         if (self.navIsReady) {
           self.navRef.current?.dispatch(TabActions.jumpTo(name as string));
         }

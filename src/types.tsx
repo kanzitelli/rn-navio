@@ -3,12 +3,20 @@ import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
 import {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import {NavigationContainer, ParamListBase, RouteProp} from '@react-navigation/native';
 import {DrawerNavigationOptions} from '@react-navigation/drawer';
+import {NativeStackNavigatorProps} from '@react-navigation/native-stack/lib/typescript/src/types';
 
 export type Keys<T> = keyof T;
+export type ContentKeys<T extends {content: any}> = Keys<T['content']>;
 
 export type BaseOptions<Return = NativeStackNavigationOptions> =
   | Return
   | ((props?: {route?: RouteProp<ParamListBase, string>; navigation?: any}) => Return);
+export type TStackDefinition<ScreenName, StackName> =
+  | StackName
+  | ScreenName[]
+  | TStackDataObj<ScreenName>;
+export type TDrawerDefinition<DrawerName> = DrawerName; // maybe smth else will be added
+export type TTabsDefinition<TabsName> = TabsName; // maybe smth else will be added
 export type TScreenData<Props = {}> =
   | NavioScreen<Props>
   | {
@@ -17,26 +25,21 @@ export type TScreenData<Props = {}> =
     };
 export type TStackDataObj<ScreenName> = {
   screens: ScreenName[];
-  screenProps?: any; // TODO
-  navigatorOptions?: any; // TODO
+  navigatorProps?: NativeStackNavigatorProps;
 };
 export type TStackData<ScreenName> = ScreenName[] | TStackDataObj<ScreenName>;
-export type TStack<ScreenName, StackName> = StackName | TStackData<ScreenName>;
-export type TDrawer<DrawerName> = DrawerName; // maybe smth else will be added
-export type TTabData<ScreenName, StackName> = {
-  stack: TStack<ScreenName, StackName>;
+export type TTabsData<ScreenName, StackName> = {
+  content: Record<string, TStackDefinition<ScreenName, StackName>>;
   options?: BaseOptions<BottomTabNavigationOptions>;
-  screenProps?: any; // TODO
-  navigatorProps?: any; // TODO
+  navigatorProps?: any; // TODO BottomTabNavigatorProps doesn't exist :(
 };
-export type TModalData<ScreenName, StackName> = TStack<ScreenName, StackName>;
+export type TModalData<ScreenName, StackName> = TStackDefinition<ScreenName, StackName>;
 export type TDrawerData<ScreenName, StackName> = {
-  content: Record<string, TStack<ScreenName, StackName>>;
+  content: Record<string, TStackDefinition<ScreenName, StackName>>;
   options?: BaseOptions<DrawerNavigationOptions>;
-  screenProps?: any; // TODO
-  navigatorProps?: any; // TODO
+  navigatorProps?: any; // TODO DrawerNavigatorProps doesn't exist :(
 };
-export type TRootName<StackName, DrawerName> = 'Tabs' | StackName | DrawerName;
+export type TRootName<StackName, TabsName, DrawerName> = TabsName | StackName | DrawerName;
 export type ExtractProps<Type> = Type extends React.FC<infer X> ? X : never;
 
 export type Layout<
@@ -91,7 +94,7 @@ export type Layout<
 
   /**
    * `(optional)`
-   * Default options to be applied per each stack's screens, tab or drawer generated within the app layout.
+   * Default options to be applied per each stack's, tab's or drawer's screens generated within the app.
    */
   defaultOptions?: DefaultOptions;
 };
