@@ -204,10 +204,10 @@ export class Navio<
       const screensKeys: ScreensName[] = Array.isArray(stackDef)
         ? // if stackDef is ScreenName[]
           stackDef
-        : // if stackDev is TStacksDataObj
+        : // if stackDef is TStacksDataObj
         typeof stackDef === 'object'
         ? (stackDef as TStackDataObj<ScreensName>).screens ?? []
-        : // if stackDev is StacksName -> look into stacks[...]
+        : // if stackDef is StacksName -> look into stacks[...]
         typeof stackDef === 'string'
         ? // if stacks[name] is ScreenName[]
           Array.isArray(stacks[stackDef])
@@ -293,7 +293,7 @@ export class Navio<
         const key = String(dck) as string; // drawer content key
         const dcs = dContent[key] as any; // drawer content stack definition
         const stackDef =
-          typeof dcs === 'object' && dcs['content']
+          typeof dcs === 'object' && dcs['stack']
             ? (dcs as TDrawerContentData<ScreensName, StacksName>).stack
             : (dcs as TStackDefinition<ScreensName, StacksName>);
 
@@ -348,7 +348,7 @@ export class Navio<
         const key = String(tck) as string; // tabs content key
         const tcs = tContent[key] as any; // tabs content stack definition
         const stackDef =
-          typeof tcs === 'object' && tcs['content']
+          typeof tcs === 'object' && tcs['stack']
             ? (tcs as TTabContentData<ScreensName, StacksName>).stack
             : (tcs as TStackDefinition<ScreensName, StacksName>);
 
