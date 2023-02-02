@@ -377,7 +377,10 @@ export class Navio<
    * Generates `<Root />` component for provided layout. On top of `<NavigationContainer />`.
    * Can be used as `<AppProviders><navio.Root /></AppProviders>`
    */
-  Root: React.FC<RootProps<RootName>> = ({navigationContainerProps, initialRouteName}) => {
+  Root: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
+    navigationContainerProps,
+    initialRouteName,
+  }) => {
     const {screens, stacks, tabs, modals, drawers, root} = this.layout;
     const appRoot = initialRouteName ?? root;
     const RootStack = createNativeStackNavigator();
