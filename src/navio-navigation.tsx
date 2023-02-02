@@ -104,30 +104,12 @@ export class NavioNavigation<
   }
 
   /**
-   * `setRoot(...)` action sets a new root of the app.
-   *
-   * Tips: It can be used to switch between Auth and App stacks.
-   *
-   * @param name TabsName | StackName | DrawersName
-   */
-  setRoot<T extends RootName>(name: T) {
-    if (this.navIsReady) {
-      this.navRef.current?.dispatch(
-        CommonActions.reset({
-          routes: [{name}],
-        }),
-      );
-    }
-  }
-
-  /**
    * `setParams(...)` action allows to update params for a certain route.
    *
    * @param name all available navigation keys. Leave `undefined` if applying for the focused route.
    * @param params object
    */
   setParams<T extends string>(name: T, params: object) {
-    // TODO think about how to take all names and not getting plain string when some name is not defined
     if (this.navIsReady) {
       this.navRef.current?.dispatch({
         ...CommonActions.setParams(params),
@@ -137,14 +119,14 @@ export class NavioNavigation<
   }
 
   /**
-   * `stack` contains navigation actions for stack-based navigators.
+   * `stacks` contains navigation actions for stack-based navigators.
    *
    * Available methods:
    *
-   * `push`, `pop`, `popToTop`
+   * `push`, `pop`, `popToTop`, `setRoot`
    *
    */
-  get stack() {
+  get stacks() {
     // local copy of current instance
     const self = this;
 
@@ -181,18 +163,35 @@ export class NavioNavigation<
           self.navRef.current?.dispatch(StackActions.popToTop());
         }
       },
+
+      /**
+       * `setRoot(...)` action sets a new app root from stacks.
+       *
+       * Tips: It can be used to switch between Auth and App stacks.
+       *
+       * @param name StackName
+       */
+      setRoot<T extends StackName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(
+            CommonActions.reset({
+              routes: [{name}],
+            }),
+          );
+        }
+      },
     };
   }
 
   /**
-   * `tab` contains navigation actions for tab-based navigators.
+   * `tabs` contains navigation actions for tab-based navigators.
    *
    * Available methods:
    *
-   * `jumpTo`
+   * `jumpTo`, `setRoot`
    *
    */
-  get tab() {
+  get tabs() {
     // local copy of current instance
     const self = this;
 
@@ -207,18 +206,35 @@ export class NavioNavigation<
           self.navRef.current?.dispatch(TabActions.jumpTo(name as string));
         }
       },
+
+      /**
+       * `setRoot(...)` action sets a new app root from tabs.
+       *
+       * Tips: It can be used to switch between Auth and Tabs.
+       *
+       * @param name TabsName
+       */
+      setRoot<T extends TabsName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(
+            CommonActions.reset({
+              routes: [{name}],
+            }),
+          );
+        }
+      },
     };
   }
 
   /**
-   * `modal` contains navigation actions for modals.
+   * `modals` contains navigation actions for modals.
    *
    * Available methods:
    *
    * `show`
    *
    */
-  get modal() {
+  get modals() {
     // local copy of current instance
     const self = this;
 
@@ -237,14 +253,14 @@ export class NavioNavigation<
   }
 
   /**
-   * `drawer` contains navigation actions for drawer-based navigators.
+   * `drawers` contains navigation actions for drawer-based navigators.
    *
    * Available methods:
    *
-   * `open`, `close`, `toggle`, `jumpTo`
+   * `open`, `close`, `toggle`, `jumpTo`, `setRoot`
    *
    */
-  get drawer() {
+  get drawers() {
     // local copy of current instance
     const self = this;
 
@@ -284,6 +300,23 @@ export class NavioNavigation<
       jumpTo<T extends DrawersContentName>(name: T) {
         if (self.navIsReady) {
           self.navRef.current?.dispatch(DrawerActions.jumpTo(name as string));
+        }
+      },
+
+      /**
+       * `setRoot(...)` action sets a new app root from drawers.
+       *
+       * Tips: It can be used to switch between Auth and Drawers.
+       *
+       * @param name DrawersName
+       */
+      setRoot<T extends DrawersName>(name: T) {
+        if (self.navIsReady) {
+          self.navRef.current?.dispatch(
+            CommonActions.reset({
+              routes: [{name}],
+            }),
+          );
         }
       },
     };
