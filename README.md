@@ -7,7 +7,7 @@ Navio is a navigation library for React Native (compatible with Expo) built on t
 
 Navio lets you easily create different kinds of apps: bottom tabs-based, simple single-screen, and apps with drawer layouts. It takes care of all boilerplate code configuration for Navigators, Screens, Stacks, Tabs, and Drawers under the hood, so you can focus on developing your app functionality.
 
-☣️ <i>This is still a young library and may have breaking changes in the future.</i>
+☣️ <i>Navio is still a young library and may have breaking changes in the future.</i>
 
 ## Quickstart
 
@@ -530,7 +530,7 @@ If you've found any diffilculties with using Navio and [React Navigation](https:
 
 There are still some things I would like to add to the library:
 
-- [ ] Improve docs. Deeplink section, etc.
+- [ ] Improve docs. Deeplinking section, etc.
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
 - [ ] `.updateOptions()` for all stacks. It's quite hard to achieve without any re-render. So it takes some time and probably will be relased in v`0.1.0`.
 - [ ] `.updateProps()` for all stacks.
