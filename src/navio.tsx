@@ -1,5 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {action, observable, reaction} from 'mobx';
+import React, {useEffect, useMemo} from 'react';
 import {createBottomTabNavigator, BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
 import {
   CommonActions,
@@ -38,8 +37,6 @@ import {
   TTabsContentValue,
   TTabUpdatedOptions,
 } from './types';
-import {NavioEmitter} from './navio-emitter';
-import {Observer, observer} from 'mobx-react';
 
 // Navio
 export class Navio<
@@ -131,7 +128,6 @@ export class Navio<
   >;
   private navRef: NavigationContainerRefWithCurrent<any>;
   private navIsReadyRef: React.MutableRefObject<boolean | null>;
-  private emitter: NavioEmitter;
 
   // ========
   // | Init |
@@ -146,16 +142,8 @@ export class Navio<
       RootName
     >,
   ) {
-    // Emitter
-    this.emitter = new NavioEmitter();
-    // this.emitter.on('tabs.updateOptions', params => {
-    //   if (!params) return;
-    //   updateNavioState('tabUpdatedOptions', params);
-    // });
-
     // Layout
     this.layout = data;
-    this.layout.hooks = [...(this.layout.hooks ?? []), useNavioState]; // adding useNavioState hook
 
     // Navigation
     this.navRef = createNavigationContainerRef<any>();
@@ -364,15 +352,15 @@ export class Navio<
        * @param name name of the tab
        * @param options `BaseOptions<BottomTabNavigationOptions>` options for the tab.
        */
-      updateOptions<T extends TabsContentName>(
-        name: T,
-        options: BaseOptions<BottomTabNavigationOptions>,
-      ) {
-        // self.emitter.emit('tabs.updateOptions', {name, options});
-        if (self.navIsReady) {
-          updateNavioState('tabUpdatedOptions', {name, options});
-        }
-      },
+      // updateOptions<T extends TabsContentName>(
+      //   name: T,
+      //   options: BaseOptions<BottomTabNavigationOptions>,
+      // ) {
+      //   if (self.navIsReady) {
+      //   // self.emitter.emit('tabs.updateOptions', {name, options});
+      //   // updateNavioState('tabUpdatedOptions', {name, options});
+      //   }
+      // },
 
       /**
        * `setRoot(...)` action sets a new app root from tabs.
@@ -671,25 +659,6 @@ export class Navio<
       return <></>;
     }
 
-    // State
-    // const [tabUpdatedOptions, setTabUpdatedOptions] = useState<TTabUpdatedOptions>();
-
-    // // Effects
-    // reaction(
-    //   () => NavioState.tabUpdatedOptions,
-    //   () => {
-    //     console.log('NavioState.tabUpdatedOptions');
-    //     console.log(NavioState.tabUpdatedOptions);
-    //   },
-    // );
-    // useEffect(() => {
-    //   // -- subscribing to emitter events
-    //   this.emitter.on('tabs.updateOptions', params => {
-    //     if (!params) return;
-    //     updateNavioState('tabUpdatedOptions', params);
-    //   });
-    // }, [this.emitter]);
-
     // -- building navigator
     const Tabs = createBottomTabNavigator();
     const currentTabsContentKeys = useMemo(
@@ -697,17 +666,15 @@ export class Navio<
       [currentTabs.content],
     );
 
-    // TODO change this shit as it doesn't change translations when change it manually
     const TabScreensMemo = useMemo(() => {
       return currentTabsContentKeys.map(key =>
         this.TabsScreen({
           key,
           Navigator: Tabs,
           content: currentTabs.content[key],
-          // updatedOptions: tabUpdatedOptions,
         }),
       );
-    }, [currentTabsContentKeys, NavioState.tabUpdatedOptions]);
+    }, [currentTabsContentKeys]);
 
     return <Tabs.Navigator {...currentTabs.navigatorProps}>{TabScreensMemo}</Tabs.Navigator>;
   };
@@ -716,8 +683,7 @@ export class Navio<
     Navigator: ReturnType<typeof createBottomTabNavigator>;
     key: string;
     content: TTabsContentValue<ScreensName, StacksName>;
-    updatedOptions?: TTabUpdatedOptions;
-  }> = ({Navigator, key, content, updatedOptions}) => {
+  }> = ({Navigator, key, content}) => {
     const {defaultOptions} = this.layout;
 
     const tcs = content as any;
@@ -726,30 +692,17 @@ export class Navio<
         ? (tcs as TTabContentData<ScreensName, StacksName>).stack
         : (tcs as TStackDefinition<ScreensName, StacksName>);
 
-    // Effects
-    reaction(
-      () => NavioState.tabUpdatedOptions,
-      () => {
-        console.log(key + ' NavioState.tabUpdatedOptions');
-        console.log(NavioState.tabUpdatedOptions);
-      },
-    );
-
     // component
     const C = () => this.Stack({stackDef});
 
     // options
     const defaultOpts = defaultOptions?.tab ?? {};
     const tcsOpts = tcs?.options ?? {};
-    const updatedOpts =
-      key === NavioState.tabUpdatedOptions?.name ? NavioState.tabUpdatedOptions.options : {};
     const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
       // navio.defaultOptions.tab
       ...(typeof defaultOpts === 'function' ? defaultOpts(props) : defaultOpts),
       // tab-based options
       ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
-      // from updatedOptions event
-      ...(typeof updatedOpts === 'function' ? updatedOpts(props) : updatedOpts),
     }); // must be function. merge options from buildNavio. also providing default options
 
     return <Navigator.Screen key={key} name={key} component={C} options={Opts} />;
@@ -759,147 +712,130 @@ export class Navio<
    * Generates `<Root />` component for provided layout. On top of `<NavigationContainer />`.
    * Can be used as `<AppProviders><navio.Root /></AppProviders>`
    */
-  Root: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = observer(
-    ({navigationContainerProps, initialRouteName}) => {
-      const {screens, stacks, tabs, modals, drawers, root} = this.layout;
-      const appRoot = initialRouteName ?? root;
-      const RootStack = createNativeStackNavigator();
+  Root: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
+    navigationContainerProps,
+    initialRouteName,
+  }) => {
+    const {screens, stacks, tabs, modals, drawers, root} = this.layout;
+    const appRoot = initialRouteName ?? root;
+    const RootStack = createNativeStackNavigator();
 
-      // Effects
-      useEffect(() => {
-        // -- changing route if `initialRouteName` was changed
-        if (initialRouteName) {
-          this.__setRoot(initialRouteName);
+    // Effects
+    useEffect(() => {
+      // -- changing route if `initialRouteName` was changed
+      if (initialRouteName) {
+        this.__setRoot(initialRouteName);
+      }
+    }, [initialRouteName]);
+
+    // Internal methods
+    const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
+      this.navRef.current = instance;
+    };
+
+    const _navContainerOnReady = () => {
+      this.navIsReadyRef.current = true;
+
+      if (navigationContainerProps?.onReady) {
+        navigationContainerProps?.onReady();
+      }
+    };
+
+    // UI Methods
+    // -- generating stacks
+    const StacksMemo = useMemo(() => {
+      if (!stacks) return null;
+
+      const stacksKeys = Object.keys(stacks);
+      return stacksKeys.map(sk => {
+        const key = String(sk) as string;
+        const C = () => this.Stack({stackDef: stacks[sk as StacksName]});
+        return <RootStack.Screen key={key} name={key} component={C} />;
+      });
+    }, [stacks]);
+
+    // -- generating tabs
+    const TabsMemo = useMemo(() => {
+      if (!tabs) return null;
+
+      const tabsKeys = Object.keys(tabs);
+      return tabsKeys.map(dk => {
+        const key = String(dk) as string;
+        const C = () => this.Tabs({tabsDef: dk as TabsName});
+        return <RootStack.Screen key={key} name={key} component={C} />;
+      });
+    }, [tabs]);
+
+    // -- generating modals
+    const ModalsMemo = useMemo(() => {
+      if (!modals) return null;
+
+      const modalsKeys = Object.keys(modals);
+      return modalsKeys.map(mk => {
+        const key = String(mk) as string;
+        const C = () => this.Stack({stackDef: modals[mk as ModalsName]});
+        return <RootStack.Screen key={key} name={key} component={C} />;
+      });
+    }, [modals]);
+
+    // -- generating drawers
+    const DrawersMemo = useMemo(() => {
+      if (!drawers) return null;
+
+      const drawersKeys = Object.keys(drawers);
+      return drawersKeys.map(dk => {
+        const key = String(dk) as string;
+        const C = () => this.Drawer({drawerDef: dk as DrawersName});
+        return <RootStack.Screen key={key} name={key} component={C} />;
+      });
+    }, [drawers]);
+
+    // -- generating fake stack (if none [stacks, tabs, drawers] is provided)
+    const FakeStackMemo = useMemo(() => {
+      const fakeStackKeys = Object.keys(screens ?? {}) as ScreensName[];
+      const C = () => {
+        if (fakeStackKeys.length > 0) {
+          return this.Stack({stackDef: fakeStackKeys});
         }
-      }, [initialRouteName]);
 
-      // Internal methods
-      const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
-        this.navRef.current = instance;
+        this.log('No screens registered', 'warn');
+        return <></>;
       };
 
-      const _navContainerOnReady = () => {
-        this.navIsReadyRef.current = true;
+      return <RootStack.Screen key={'Stack'} name={'Stack'} component={C} />;
+    }, [screens]);
 
-        if (navigationContainerProps?.onReady) {
-          navigationContainerProps?.onReady();
-        }
-      };
+    // -- generating app's screens
+    const AppScreensMemo = useMemo(() => {
+      if (!TabsMemo && !StacksMemo && !DrawersMemo) return FakeStackMemo;
 
-      // UI Methods
-      // -- generating stacks
-      const StacksMemo = useMemo(() => {
-        if (!stacks) return null;
+      return [TabsMemo, StacksMemo, DrawersMemo];
+    }, [TabsMemo, StacksMemo, DrawersMemo, FakeStackMemo]);
 
-        const stacksKeys = Object.keys(stacks);
-        return stacksKeys.map(sk => {
-          const key = String(sk) as string;
-          const C = () => this.Stack({stackDef: stacks[sk as StacksName]});
-          return <RootStack.Screen key={key} name={key} component={C} />;
-        });
-      }, [stacks]);
-
-      // -- generating tabs
-      const TabsMemo = useMemo(() => {
-        if (!tabs) return null;
-
-        const tabsKeys = Object.keys(tabs);
-        return tabsKeys.map(dk => {
-          const key = String(dk) as string;
-          const C = () => this.Tabs({tabsDef: dk as TabsName});
-          return <RootStack.Screen key={key} name={key} component={C} />;
-        });
-      }, [tabs]);
-
-      // -- generating modals
-      const ModalsMemo = useMemo(() => {
-        if (!modals) return null;
-
-        const modalsKeys = Object.keys(modals);
-        return modalsKeys.map(mk => {
-          const key = String(mk) as string;
-          const C = () => this.Stack({stackDef: modals[mk as ModalsName]});
-          return <RootStack.Screen key={key} name={key} component={C} />;
-        });
-      }, [modals]);
-
-      // -- generating drawers
-      const DrawersMemo = useMemo(() => {
-        if (!drawers) return null;
-
-        const drawersKeys = Object.keys(drawers);
-        return drawersKeys.map(dk => {
-          const key = String(dk) as string;
-          const C = () => this.Drawer({drawerDef: dk as DrawersName});
-          return <RootStack.Screen key={key} name={key} component={C} />;
-        });
-      }, [drawers]);
-
-      // -- generating fake stack (if none [stacks, tabs, drawers] is provided)
-      const FakeStackMemo = useMemo(() => {
-        const fakeStackKeys = Object.keys(screens ?? {}) as ScreensName[];
-        const C = () => {
-          if (fakeStackKeys.length > 0) {
-            return this.Stack({stackDef: fakeStackKeys});
-          }
-
-          this.log('No screens registered', 'warn');
-          return <></>;
-        };
-
-        return <RootStack.Screen key={'Stack'} name={'Stack'} component={C} />;
-      }, [screens]);
-
-      // -- generating app's screens
-      const AppScreensMemo = useMemo(() => {
-        if (!TabsMemo && !StacksMemo && !DrawersMemo) return FakeStackMemo;
-
-        return [TabsMemo, StacksMemo, DrawersMemo];
-      }, [TabsMemo, StacksMemo, DrawersMemo, FakeStackMemo]);
-
-      // -- building root
-      const RootMemo = useMemo(() => {
-        return (
-          <RootStack.Navigator
-            initialRouteName={appRoot as string}
-            screenOptions={{headerShown: false}}
-          >
-            {/* Tabs, Stacks, Drawers */}
-            <RootStack.Group>{AppScreensMemo}</RootStack.Group>
-
-            {/* Modals */}
-            <RootStack.Group screenOptions={{presentation: 'modal'}}>{ModalsMemo}</RootStack.Group>
-          </RootStack.Navigator>
-        );
-      }, [appRoot, AppScreensMemo, ModalsMemo]);
-
+    // -- building root
+    const RootMemo = useMemo(() => {
       return (
-        <NavigationContainer
-          {...navigationContainerProps}
-          ref={_navContainerRef}
-          onReady={_navContainerOnReady}
+        <RootStack.Navigator
+          initialRouteName={appRoot as string}
+          screenOptions={{headerShown: false}}
         >
-          {RootMemo}
-        </NavigationContainer>
-      );
-    },
-  );
-}
+          {/* Tabs, Stacks, Drawers */}
+          <RootStack.Group>{AppScreensMemo}</RootStack.Group>
 
-// Navio State
-const NavioState = observable({
-  tabUpdatedOptions: {} as TTabUpdatedOptions,
-});
-const updateNavioState = action((what: keyof typeof NavioState, value: any) => {
-  NavioState[what] = value;
-});
-const useNavioState = () => {
-  const [navioState, setNavioState] = useState(NavioState);
-  reaction(
-    () => NavioState.tabUpdatedOptions,
-    () => {
-      setNavioState(NavioState);
-    },
-  );
-  return {state: navioState};
-};
+          {/* Modals */}
+          <RootStack.Group screenOptions={{presentation: 'modal'}}>{ModalsMemo}</RootStack.Group>
+        </RootStack.Navigator>
+      );
+    }, [appRoot, AppScreensMemo, ModalsMemo]);
+
+    return (
+      <NavigationContainer
+        {...navigationContainerProps}
+        ref={_navContainerRef}
+        onReady={_navContainerOnReady}
+      >
+        {RootMemo}
+      </NavigationContainer>
+    );
+  };
+}
