@@ -59,5 +59,9 @@
     "navio",
     "rn-navio"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "mobx": "^6.7.0",
+    "mobx-react": "^7.6.0"
+  }
 }
