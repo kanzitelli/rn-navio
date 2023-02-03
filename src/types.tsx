@@ -27,7 +27,7 @@ export type TScreenData<Props = {}> =
     };
 export type TStackDataObj<ScreensName> = {
   screens: ScreensName[];
-  navigatorProps?: Omit<ExtractProps<NativeStackNavigatorProps>, 'children'>; // omitting required children prop
+  navigatorProps?: Omit<NativeStackNavigatorProps, 'children'>; // omitting required children prop
 };
 export type TStackData<ScreensName> = ScreensName[] | TStackDataObj<ScreensName>;
 export type TTabContentData<ScreensName, StacksName> = {
