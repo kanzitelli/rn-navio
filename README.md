@@ -155,7 +155,7 @@ export default () => <navio.Root />;
 
 ### Advanced example
 
-Advanced example with all available props can be found @ [expo-starte](https://github.com/kanzitelli/expo-starter/blob/master/src/screens/index.tsx)
+Advanced example with all available props can be found @ [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/screens/index.tsx)
 
 ## Layout
 
@@ -530,7 +530,7 @@ If you've found any diffilculties with using Navio and [React Navigation](https:
 
 There are still some things I would like to add to the library:
 
-- [ ] Improve docs. Deeplinking section, etc.
+- [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
 - [ ] `.updateOptions()` for all stacks. It's quite hard to achieve without any re-render. So it takes some time and probably will be relased in v`0.1.0`.
 - [ ] `.updateProps()` for all stacks.
