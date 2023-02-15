@@ -1,6 +1,6 @@
 {
   "name": "rn-navio",
-  "version": "0.0.2",
+  "version": "0.0.5-rc.7",
   "description": "🧭 Navigation library for React Native (Expo). Build once, navigate from anywhere to everywhere!",
   "author": "Batyr <dev@batyr.io>",
   "homepage": "https://github.com/kanzitelli/rn-navio",

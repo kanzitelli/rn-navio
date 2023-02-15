@@ -35,7 +35,8 @@ import {
   TDrawerContentData,
   RootSetAs,
   TTabsContentValue,
-  TTabUpdatedOptions,
+  TDrawerContentValue,
+  DefaultOptions,
 } from './types';
 
 // Navio
@@ -171,15 +172,48 @@ export class Navio<
   }
 
   private __setRoot(routeName: string) {
-    if (this.layout.stacks && this.layout.stacks[routeName as StacksName]) {
+    const {stacks, tabs, drawers} = this.layout;
+
+    if (stacks && stacks[routeName as StacksName]) {
       this.stacks.setRoot(routeName as StacksName);
     }
-    if (this.layout.tabs && this.layout.tabs[routeName as TabsName]) {
+    if (tabs && tabs[routeName as TabsName]) {
       this.tabs.setRoot(routeName as TabsName);
     }
-    if (this.layout.drawers && this.layout.drawers[routeName as DrawersName]) {
+    if (drawers && drawers[routeName as DrawersName]) {
       this.drawers.setRoot(routeName as DrawersName);
     }
+  }
+
+  private getCustomDefaultOptions(): DefaultOptions {
+    return {
+      stacks: {
+        container: {
+          headerShown: false,
+        },
+      },
+      tabs: {
+        container: {
+          headerShown: false,
+        },
+        screen: {
+          headerShown: false,
+        },
+      },
+      drawers: {
+        container: {
+          headerShown: false,
+        },
+        screen: {
+          headerShown: false,
+        },
+      },
+      modals: {
+        container: {
+          headerShown: false,
+        },
+      },
+    };
   }
 
   protected navigate = <
@@ -480,6 +514,108 @@ export class Navio<
   // ===========
   // | Layouts |
   // ===========
+  // | Stacks |
+  // some getters for Stack
+  private __StackGetNavigatorProps = (
+    definition: TStackDefinition<ScreensName, StacksName> | undefined,
+  ) => {
+    const {stacks} = this.layout;
+    if (stacks === undefined) return {};
+
+    return Array.isArray(definition)
+      ? // if definition is ScreenName[]
+        {}
+      : // if stackDev is TStacksDataObj
+      typeof definition === 'object'
+      ? (definition as TStackDataObj<ScreensName>).navigatorProps ?? {}
+      : // if stackDev is StacksName -> look into stacks[...]
+      typeof definition === 'string'
+      ? // if stacks[name] is ScreenName[]
+        Array.isArray(stacks[definition])
+        ? {}
+        : // if stacks[name] is TStacksDataObj
+        typeof stacks[definition] === 'object'
+        ? (stacks[definition] as TStackDataObj<ScreensName>).navigatorProps ?? {}
+        : {}
+      : {};
+  };
+  private __StackGetContainerOpts = (
+    definition: TStackDefinition<ScreensName, StacksName> | undefined,
+  ) => {
+    const {stacks} = this.layout;
+    if (stacks === undefined) return {};
+
+    return Array.isArray(definition)
+      ? // if definition is ScreenName[]
+        {}
+      : // if stackDev is TStacksDataObj
+      typeof definition === 'object'
+      ? (definition as TStackDataObj<ScreensName>).containerOptions ?? {}
+      : // if stackDev is StacksName -> look into stacks[...]
+      typeof definition === 'string'
+      ? // if stacks[name] is ScreenName[]
+        Array.isArray(stacks[definition])
+        ? {}
+        : // if stacks[name] is TStacksDataObj
+        typeof stacks[definition] === 'object'
+        ? (stacks[definition] as TStackDataObj<ScreensName>).containerOptions ?? {}
+        : {}
+      : {};
+  };
+  private __StackGetScreens = (
+    definition: TStackDefinition<ScreensName, StacksName> | undefined,
+  ) => {
+    const {stacks} = this.layout;
+    if (stacks === undefined) return [];
+
+    return Array.isArray(definition)
+      ? // if definition is ScreenName[]
+        (definition as ScreensName[])
+      : // if definition is TStacksDataObj
+      typeof definition === 'object'
+      ? (definition as TStackDataObj<ScreensName>).screens ?? []
+      : // if definition is StacksName -> look into stacks[...]
+      typeof definition === 'string'
+      ? // if stacks[name] is ScreenName[]
+        Array.isArray(stacks[definition])
+        ? (stacks[definition] as ScreensName[])
+        : // if stacks[name] is TStacksDataObj
+        typeof stacks[definition] === 'object'
+        ? (stacks[definition] as TStackDataObj<ScreensName>).screens ?? []
+        : []
+      : [];
+  };
+
+  private StackContainer: React.FC<{
+    Stack: ReturnType<typeof createNativeStackNavigator>;
+    name: StacksName;
+    definition: TStackDefinition<ScreensName, StacksName> | undefined;
+  }> = ({Stack, definition, name}) => {
+    const {defaultOptions} = this.layout;
+
+    // component
+    const C = () => this.Stack({stackDef: definition});
+
+    // options
+    const containerDefaultOptions = defaultOptions?.tabs?.container ?? {};
+    const customDefaultOptions = this.getCustomDefaultOptions()?.stacks?.container ?? {};
+    const containerOptions = this.__StackGetContainerOpts(definition);
+    const Opts: BaseOptions<NativeStackNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.tabs.container
+      ...(typeof containerDefaultOptions === 'function'
+        ? containerDefaultOptions(props)
+        : containerDefaultOptions),
+      // navio.stacks.[].containerOptions
+      ...(typeof containerOptions === 'function' ? containerOptions(props) : containerOptions),
+    }); // must be function. merge options from buildNavio. also providing default options
+
+    return <Stack.Screen key={name} name={name} component={C} options={Opts} />;
+  };
+
   private Stack: React.FC<{
     stackDef: TStackDefinition<ScreensName, StacksName> | undefined;
   }> = ({stackDef}) => {
@@ -499,86 +635,222 @@ export class Navio<
     }
 
     // -- getting navigator props
-    const navigatorProps = Array.isArray(stackDef)
-      ? // if stackDef is ScreenName[]
-        {}
-      : // if stackDev is TStacksDataObj
-      typeof stackDef === 'object'
-      ? (stackDef as TStackDataObj<ScreensName>).navigatorProps ?? {}
-      : // if stackDev is StacksName -> look into stacks[...]
-      typeof stackDef === 'string'
-      ? // if stacks[name] is ScreenName[]
-        Array.isArray(stacks[stackDef])
-        ? {}
-        : // if stacks[name] is TStacksDataObj
-        typeof stacks[stackDef] === 'object'
-        ? (stacks[stackDef] as TStackDataObj<ScreensName>).navigatorProps ?? {}
-        : {}
-      : {};
+    const navigatorProps = this.__StackGetNavigatorProps(stackDef);
 
     // -- building navigator
     const Stack = createNativeStackNavigator();
     const StackScreensMemo = useMemo(() => {
-      const screensKeys: ScreensName[] = Array.isArray(stackDef)
-        ? // if stackDef is ScreenName[]
-          stackDef
-        : // if stackDef is TStacksDataObj
-        typeof stackDef === 'object'
-        ? (stackDef as TStackDataObj<ScreensName>).screens ?? []
-        : // if stackDef is StacksName -> look into stacks[...]
-        typeof stackDef === 'string'
-        ? // if stacks[name] is ScreenName[]
-          Array.isArray(stacks[stackDef])
-          ? (stacks[stackDef] as ScreensName[])
-          : // if stacks[name] is TStacksDataObj
-          typeof stacks[stackDef] === 'object'
-          ? (stacks[stackDef] as TStackDataObj<ScreensName>).screens ?? []
-          : []
-        : [];
-
-      return screensKeys.map(sk => {
-        const key = String(sk) as string;
-        const screen = screens[key as ScreensName];
-
-        // component
-        // -- handling when screen is a component or object{component,options}
-        let sComponent: NavioScreen;
-        let sOptions: BaseOptions<NativeStackNavigationOptions>;
-        if (typeof screen === 'object') {
-          if (screen.component) {
-            // {component,options}
-            sComponent = screen.component;
-            sOptions = screen.options ?? {};
-          } else {
-            // component
-            // this might happen if a screen is provided as wrapped component, for ex. const Main: React.FC = observer(() => {}); (observer from mobx)
-            sComponent = screen as any;
-            sOptions = {};
-          }
-        } else {
-          // component
-          sComponent = screen;
-          sOptions = {};
-        }
-        const C = sComponent;
-
-        // options
-        const defaultOptions = this.layout.defaultOptions?.stack ?? {};
-        const Opts: BaseOptions<NativeStackNavigationOptions> = props => ({
-          // navio.defaultOptions.stack
-          ...(typeof defaultOptions === 'function' ? defaultOptions(props) : defaultOptions),
-          // navio.screens.Name.options
-          ...(typeof sOptions === 'function' ? sOptions(props) : sOptions),
-          // component-based options
-          ...(typeof C.options === 'function' ? C.options(props) : C.options),
-        }); // must be function. merge options from buildNavio and from component itself. also providing default options
-
-        // screen
-        return <Stack.Screen key={key} name={key} component={C} options={Opts} />;
-      });
+      return this.__StackGetScreens(stackDef).map(sk =>
+        this.StackScreen({StackNavigator: Stack, name: sk}),
+      );
     }, [stackDef, screens, stacks]);
 
     return <Stack.Navigator {...navigatorProps}>{StackScreensMemo}</Stack.Navigator>;
+  };
+
+  private StackScreen: React.FC<{
+    StackNavigator: ReturnType<typeof createNativeStackNavigator>;
+    name: ScreensName;
+  }> = ({StackNavigator, name}) => {
+    const {screens, defaultOptions} = this.layout;
+
+    const screen = screens[name];
+
+    // component
+    // -- handling when screen is a component or object{component,options}
+    let sComponent: NavioScreen;
+    let sOptions: BaseOptions<NativeStackNavigationOptions>;
+    if (typeof screen === 'object') {
+      if (screen.component) {
+        // {component,options}
+        sComponent = screen.component;
+        sOptions = screen.options ?? {};
+      } else {
+        // component
+        // this might happen if a screen is provided as wrapped component, for ex. const Main: React.FC = observer(() => {}); (observer from mobx)
+        sComponent = screen as any;
+        sOptions = {};
+      }
+    } else {
+      // component
+      sComponent = screen;
+      sOptions = {};
+    }
+    const C = sComponent;
+
+    // options
+    const sDefaultOptions = defaultOptions?.stacks?.screen ?? {};
+    const customDefaultOptions = this.getCustomDefaultOptions()?.stacks?.screen ?? {};
+    const Opts: BaseOptions<NativeStackNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.stacks.screen
+      ...(typeof sDefaultOptions === 'function' ? sDefaultOptions(props) : sDefaultOptions),
+      // navio.screens.Name.options
+      ...(typeof sOptions === 'function' ? sOptions(props) : sOptions),
+      // component-based options
+      ...(typeof C.options === 'function' ? C.options(props) : C.options),
+    }); // must be function. merge options from buildNavio and from component itself. also providing default options
+
+    // screen
+    return <StackNavigator.Screen key={name} name={name} component={C} options={Opts} />;
+  };
+
+  // | Tabs |
+  private __TabsGet = (definition: TTabsDefinition<TabsName> | undefined) => {
+    const {tabs} = this.layout;
+    if (tabs === undefined) return undefined;
+
+    const currentTabs: TTabsData<ScreensName, StacksName> | undefined =
+      typeof definition === 'string' ? tabs[definition] : undefined;
+
+    return currentTabs;
+  };
+
+  private TabsContainer: React.FC<{
+    StackNavigator: ReturnType<typeof createNativeStackNavigator>;
+    name: TabsName;
+    definition: TTabsDefinition<TabsName> | undefined;
+  }> = ({StackNavigator, definition, name}) => {
+    const {defaultOptions} = this.layout;
+
+    // component
+    const C = () => this.Tabs({tabsDef: definition});
+
+    // options
+    const containerDefaultOptions = defaultOptions?.tabs?.container ?? {};
+    const customDefaultOptions = this.getCustomDefaultOptions()?.tabs?.container ?? {};
+    const containerOptions = this.__TabsGet(definition)?.containerOptions ?? {};
+    const Opts: BaseOptions<NativeStackNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.tabs.container
+      ...(typeof containerDefaultOptions === 'function'
+        ? containerDefaultOptions(props)
+        : containerDefaultOptions),
+      // navio.stacks.[].containerOptions
+      ...(typeof containerOptions === 'function' ? containerOptions(props) : containerOptions),
+    }); // must be function. merge options from buildNavio. also providing default options
+
+    return <StackNavigator.Screen key={name} name={name} component={C} options={Opts} />;
+  };
+
+  private Tabs: React.FC<{
+    tabsDef: TTabsDefinition<TabsName> | undefined;
+  }> = ({tabsDef}) => {
+    const {tabs, hooks} = this.layout;
+
+    // -- running hooks
+    if (hooks) for (const h of hooks) if (h) h();
+
+    if (!tabs) {
+      this.log('No tabs registered');
+      return <></>;
+    }
+
+    const currentTabs = this.__TabsGet(tabsDef);
+    if (!currentTabs) {
+      this.log('No tabs found');
+      return <></>;
+    }
+
+    // -- building navigator
+    const Tabs = useMemo(() => createBottomTabNavigator(), [tabs]);
+    const currentTabsContentKeys = useMemo(
+      () => Object.keys(currentTabs.content),
+      [currentTabs.content],
+    );
+
+    const TabScreensMemo = useMemo(() => {
+      return currentTabsContentKeys.map(key =>
+        this.TabScreen({
+          name: key,
+          TabNavigator: Tabs,
+          content: currentTabs.content[key],
+        }),
+      );
+    }, [Tabs, currentTabsContentKeys]);
+
+    return <Tabs.Navigator {...currentTabs.navigatorProps}>{TabScreensMemo}</Tabs.Navigator>;
+  };
+
+  private TabScreen: React.FC<{
+    TabNavigator: ReturnType<typeof createBottomTabNavigator>;
+    name: string;
+    content: TTabsContentValue<ScreensName, StacksName>;
+  }> = ({TabNavigator, name, content}) => {
+    const {defaultOptions} = this.layout;
+
+    const tcs = content as any;
+    const stackDef =
+      typeof tcs === 'object' && tcs['stack']
+        ? (tcs as TTabContentData<ScreensName, StacksName>).stack
+        : (tcs as TStackDefinition<ScreensName, StacksName>);
+
+    // component
+    const C = () => this.Stack({stackDef});
+
+    // options
+    const tcsDefaultOpts = defaultOptions?.tabs?.screen ?? {};
+    const customDefaultOptions = this.getCustomDefaultOptions()?.tabs?.screen ?? {};
+    const tcsOpts = tcs?.options ?? {};
+    const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.tabs.screen
+      ...(typeof tcsDefaultOpts === 'function' ? tcsDefaultOpts(props) : tcsDefaultOpts),
+      // tab-based options
+      ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
+    }); // must be function. merge options from buildNavio. also providing default options
+
+    return <TabNavigator.Screen key={name} name={name} component={C} options={Opts} />;
+  };
+
+  // | Drawers |
+  private __DrawerGet = (definition: TDrawerDefinition<DrawersName> | undefined) => {
+    const {drawers} = this.layout;
+    if (drawers === undefined) return undefined;
+
+    const current: TDrawersData<ScreensName, StacksName> | undefined =
+      typeof definition === 'string' ? drawers[definition] : undefined;
+
+    return current;
+  };
+
+  private DrawerContainer: React.FC<{
+    StackNavigator: ReturnType<typeof createNativeStackNavigator>;
+    name: DrawersName;
+    definition: TDrawerDefinition<DrawersName> | undefined;
+  }> = ({StackNavigator, definition, name}) => {
+    const {defaultOptions} = this.layout;
+
+    // component
+    const C = () => this.Drawer({drawerDef: definition});
+
+    // options
+    const containerDefaultOptions = defaultOptions?.drawers?.container ?? {};
+    const customDefaultOptions = this.getCustomDefaultOptions()?.drawers?.container ?? {};
+    const containerOptions = this.__DrawerGet(definition)?.containerOptions ?? {};
+    const Opts: BaseOptions<NativeStackNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.tabs.container
+      ...(typeof containerDefaultOptions === 'function'
+        ? containerDefaultOptions(props)
+        : containerDefaultOptions),
+      // navio.stacks.[].containerOptions
+      ...(typeof containerOptions === 'function' ? containerOptions(props) : containerOptions),
+    }); // must be function. merge options from buildNavio. also providing default options
+
+    return <StackNavigator.Screen key={name} name={name} component={C} options={Opts} />;
   };
 
   private Drawer: React.FC<{
@@ -602,110 +874,88 @@ export class Navio<
     }
 
     // -- building navigator
-    const Drawer = createDrawerNavigator();
+    const Drawer = useMemo(() => createDrawerNavigator(), [drawers]);
+    const currentDrawersContentKeys = useMemo(
+      () => Object.keys(currentDrawer.content),
+      [currentDrawer.content],
+    );
+
     const DrawerScreensMemo = useMemo(() => {
-      const dContent = currentDrawer.content;
-      const dContentKeys: DrawersContentName[] = Object.keys(
-        currentDrawer.content,
-      ) as DrawersContentName[];
-      return dContentKeys.map(dck => {
-        const key = String(dck) as string; // drawer content key
-        const dcs = dContent[key] as any; // drawer content stack definition
-        const stackDef =
-          typeof dcs === 'object' && dcs['stack']
-            ? (dcs as TDrawerContentData<ScreensName, StacksName>).stack
-            : (dcs as TStackDefinition<ScreensName, StacksName>);
-
-        // component
-        const C = () => this.Stack({stackDef});
-
-        // options
-        const defaultOptions = this.layout.defaultOptions?.drawer ?? {};
-        const dcsOpts = dcs?.options ?? {};
-        const Opts: BaseOptions<DrawerNavigationOptions> = props => ({
-          // navio.defaultOptions.drawer
-          ...(typeof defaultOptions === 'function' ? defaultOptions(props) : defaultOptions),
-          // drawer-based options
-          ...(typeof dcsOpts === 'function' ? dcsOpts(props) : dcsOpts),
-        }); // must be function. merge options from buildNavio. also providing default options
-
-        // screen
-        return <Drawer.Screen key={key} name={key} component={C} options={Opts} />;
-      });
-    }, []);
+      return currentDrawersContentKeys.map(key =>
+        this.DrawerScreen({
+          name: key,
+          DrawerNavigator: Drawer,
+          content: currentDrawer.content[key],
+        }),
+      );
+    }, [Drawer, currentDrawersContentKeys]);
 
     return (
       <Drawer.Navigator {...currentDrawer.navigatorProps}>{DrawerScreensMemo}</Drawer.Navigator>
     );
   };
 
-  private Tabs: React.FC<{
-    tabsDef: TTabsDefinition<TabsName> | undefined;
-  }> = ({tabsDef}) => {
-    const {tabs, hooks} = this.layout;
-
-    // -- running hooks
-    if (hooks) for (const h of hooks) if (h) h();
-
-    if (!tabs) {
-      this.log('No tabs registered');
-      return <></>;
-    }
-
-    const currentTabs: TTabsData<ScreensName, StacksName> | undefined =
-      typeof tabsDef === 'string' ? tabs[tabsDef] : undefined;
-    if (!currentTabs) {
-      this.log('No tabs found');
-      return <></>;
-    }
-
-    // -- building navigator
-    const Tabs = createBottomTabNavigator();
-    const currentTabsContentKeys = useMemo(
-      () => Object.keys(currentTabs.content),
-      [currentTabs.content],
-    );
-
-    const TabScreensMemo = useMemo(() => {
-      return currentTabsContentKeys.map(key =>
-        this.TabsScreen({
-          key,
-          Navigator: Tabs,
-          content: currentTabs.content[key],
-        }),
-      );
-    }, [currentTabsContentKeys]);
-
-    return <Tabs.Navigator {...currentTabs.navigatorProps}>{TabScreensMemo}</Tabs.Navigator>;
-  };
-
-  private TabsScreen: React.FC<{
-    Navigator: ReturnType<typeof createBottomTabNavigator>;
-    key: string;
-    content: TTabsContentValue<ScreensName, StacksName>;
-  }> = ({Navigator, key, content}) => {
+  private DrawerScreen: React.FC<{
+    DrawerNavigator: ReturnType<typeof createDrawerNavigator>;
+    name: string;
+    content: TDrawerContentValue<ScreensName, StacksName>;
+  }> = ({DrawerNavigator, name, content}) => {
     const {defaultOptions} = this.layout;
 
-    const tcs = content as any;
+    const dcs = content as any;
     const stackDef =
-      typeof tcs === 'object' && tcs['stack']
-        ? (tcs as TTabContentData<ScreensName, StacksName>).stack
-        : (tcs as TStackDefinition<ScreensName, StacksName>);
+      typeof dcs === 'object' && dcs['stack']
+        ? (dcs as TDrawerContentData<ScreensName, StacksName>).stack
+        : (dcs as TStackDefinition<ScreensName, StacksName>);
 
     // component
     const C = () => this.Stack({stackDef});
 
     // options
-    const defaultOpts = defaultOptions?.tab ?? {};
-    const tcsOpts = tcs?.options ?? {};
-    const Opts: BaseOptions<BottomTabNavigationOptions> = props => ({
-      // navio.defaultOptions.tab
-      ...(typeof defaultOpts === 'function' ? defaultOpts(props) : defaultOpts),
-      // tab-based options
-      ...(typeof tcsOpts === 'function' ? tcsOpts(props) : tcsOpts),
+    const dcsDefaultOptions = defaultOptions?.drawers?.screen ?? {};
+    const customDefaultOptions = this.getCustomDefaultOptions()?.drawers?.screen ?? {};
+    const dcsOpts = dcs?.options ?? {};
+    const Opts: BaseOptions<DrawerNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.drawers.screen
+      ...(typeof dcsDefaultOptions === 'function' ? dcsDefaultOptions(props) : dcsDefaultOptions),
+      // drawer-based options
+      ...(typeof dcsOpts === 'function' ? dcsOpts(props) : dcsOpts),
     }); // must be function. merge options from buildNavio. also providing default options
 
-    return <Navigator.Screen key={key} name={key} component={C} options={Opts} />;
+    // screen
+    return <DrawerNavigator.Screen key={name} name={name} component={C} options={Opts} />;
+  };
+
+  // | Modals |
+  private ModalContainer: React.FC<{
+    StackNavigator: ReturnType<typeof createNativeStackNavigator>;
+    name: ModalsName;
+    definition: TStackDefinition<ScreensName, StacksName> | undefined;
+  }> = ({StackNavigator, definition, name}) => {
+    const {defaultOptions} = this.layout;
+
+    // component
+    const C = () => this.Stack({stackDef: definition});
+
+    // options
+    const customDefaultOptions = this.getCustomDefaultOptions()?.modals?.container ?? {};
+    const containerDefaultOptions = defaultOptions?.modals?.container ?? {};
+    const Opts: BaseOptions<NativeStackNavigationOptions> = props => ({
+      // ! custom default options
+      ...(typeof customDefaultOptions === 'function'
+        ? customDefaultOptions(props)
+        : customDefaultOptions),
+      // navio.defaultOptions.tabs.container
+      ...(typeof containerDefaultOptions === 'function'
+        ? containerDefaultOptions(props)
+        : containerDefaultOptions),
+    }); // must be function. merge options from buildNavio. also providing default options
+
+    return <StackNavigator.Screen key={name} name={name} component={C} options={Opts} />;
   };
 
   /**
@@ -716,9 +966,9 @@ export class Navio<
     navigationContainerProps,
     initialRouteName,
   }) => {
-    const {screens, stacks, tabs, modals, drawers, root} = this.layout;
+    const {stacks, tabs, modals, drawers, root} = this.layout;
     const appRoot = initialRouteName ?? root;
-    const RootStack = createNativeStackNavigator();
+    const AppStack = createNativeStackNavigator();
 
     // Effects
     useEffect(() => {
@@ -742,91 +992,64 @@ export class Navio<
     };
 
     // UI Methods
-    // -- generating stacks
-    const StacksMemo = useMemo(() => {
+    // -- app stacks
+    const AppStacks = useMemo(() => {
       if (!stacks) return null;
 
-      const stacksKeys = Object.keys(stacks);
-      return stacksKeys.map(sk => {
-        const key = String(sk) as string;
-        const C = () => this.Stack({stackDef: stacks[sk as StacksName]});
-        return <RootStack.Screen key={key} name={key} component={C} />;
-      });
+      const stacksKeys = Object.keys(stacks) as StacksName[];
+      return stacksKeys.map(sk =>
+        this.StackContainer({Stack: AppStack, name: sk, definition: stacks[sk]}),
+      );
     }, [stacks]);
 
-    // -- generating tabs
-    const TabsMemo = useMemo(() => {
+    // -- app tabs
+    const AppTabs = useMemo(() => {
       if (!tabs) return null;
 
-      const tabsKeys = Object.keys(tabs);
-      return tabsKeys.map(dk => {
-        const key = String(dk) as string;
-        const C = () => this.Tabs({tabsDef: dk as TabsName});
-        return <RootStack.Screen key={key} name={key} component={C} />;
-      });
+      const tabsKeys = Object.keys(tabs) as TabsName[];
+      return tabsKeys.map(tk =>
+        this.TabsContainer({StackNavigator: AppStack, name: tk, definition: tk}),
+      );
     }, [tabs]);
 
-    // -- generating modals
-    const ModalsMemo = useMemo(() => {
-      if (!modals) return null;
-
-      const modalsKeys = Object.keys(modals);
-      return modalsKeys.map(mk => {
-        const key = String(mk) as string;
-        const C = () => this.Stack({stackDef: modals[mk as ModalsName]});
-        return <RootStack.Screen key={key} name={key} component={C} />;
-      });
-    }, [modals]);
-
-    // -- generating drawers
-    const DrawersMemo = useMemo(() => {
+    // -- app drawers
+    const AppDrawers = useMemo(() => {
       if (!drawers) return null;
 
-      const drawersKeys = Object.keys(drawers);
-      return drawersKeys.map(dk => {
-        const key = String(dk) as string;
-        const C = () => this.Drawer({drawerDef: dk as DrawersName});
-        return <RootStack.Screen key={key} name={key} component={C} />;
-      });
+      const drawersKeys = Object.keys(drawers) as DrawersName[];
+      return drawersKeys.map(dk =>
+        this.DrawerContainer({StackNavigator: AppStack, name: dk, definition: dk}),
+      );
     }, [drawers]);
 
-    // -- generating fake stack (if none [stacks, tabs, drawers] is provided)
-    const FakeStackMemo = useMemo(() => {
-      const fakeStackKeys = Object.keys(screens ?? {}) as ScreensName[];
-      const C = () => {
-        if (fakeStackKeys.length > 0) {
-          return this.Stack({stackDef: fakeStackKeys});
-        }
+    // -- app modals
+    const AppModals = useMemo(() => {
+      if (!modals) return null;
 
-        this.log('No screens registered', 'warn');
-        return <></>;
-      };
-
-      return <RootStack.Screen key={'Stack'} name={'Stack'} component={C} />;
-    }, [screens]);
-
-    // -- generating app's screens
-    const AppScreensMemo = useMemo(() => {
-      if (!TabsMemo && !StacksMemo && !DrawersMemo) return FakeStackMemo;
-
-      return [TabsMemo, StacksMemo, DrawersMemo];
-    }, [TabsMemo, StacksMemo, DrawersMemo, FakeStackMemo]);
+      const modalsKeys = Object.keys(modals) as ModalsName[];
+      return modalsKeys.map(mk =>
+        this.ModalContainer({StackNavigator: AppStack, name: mk, definition: modals[mk]}),
+      );
+    }, [modals]);
 
     // -- building root
-    const RootMemo = useMemo(() => {
+    const App = useMemo(() => {
       return (
-        <RootStack.Navigator
-          initialRouteName={appRoot as string}
-          screenOptions={{headerShown: false}}
-        >
-          {/* Tabs, Stacks, Drawers */}
-          <RootStack.Group>{AppScreensMemo}</RootStack.Group>
+        <AppStack.Navigator initialRouteName={appRoot as string}>
+          {/* Stacks */}
+          <AppStack.Group>{AppStacks}</AppStack.Group>
+
+          {/* Tabs */}
+          <AppStack.Group>{AppTabs}</AppStack.Group>
+
+          {/* Drawers */}
+          <AppStack.Group>{AppDrawers}</AppStack.Group>
 
           {/* Modals */}
-          <RootStack.Group screenOptions={{presentation: 'modal'}}>{ModalsMemo}</RootStack.Group>
-        </RootStack.Navigator>
+          <AppStack.Group screenOptions={{presentation: 'modal'}}>{AppModals}</AppStack.Group>
+        </AppStack.Navigator>
       );
-    }, [appRoot, AppScreensMemo, ModalsMemo]);
+    }, [appRoot]);
 
     return (
       <NavigationContainer
@@ -834,7 +1057,7 @@ export class Navio<
         ref={_navContainerRef}
         onReady={_navContainerOnReady}
       >
-        {RootMemo}
+        {App}
       </NavigationContainer>
     );
   };

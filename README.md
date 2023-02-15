@@ -140,12 +140,63 @@ const navio = Navio.build({
     },
   },
   root: 'AppTabs',
-  options: {
-    tab: {
-      // default tab's options
-      headerShown: false,
+});
+
+export default () => <navio.Root />;
+```
+
+</details>
+
+### Drawer
+
+<details>
+<summary>Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+
+const navio = Navio.build({
+  screens: {
+    Home: () => (
+      <>
+        <Text>Home</Text>
+        <Button title="Push" onPress={() => navio.push('Example')} />
+        <Button title="Push stack" onPress={() => navio.stacks.push('HomeStack')} />
+        <Button title="Set Root - Stack" onPress={() => navio.stacks.setRoot('HomeStack')} />
+        <Button title="Set Root - Tabs" onPress={() => navio.setRoot('tabs', 'AppTabs')} />
+      </>
+    ),
+    Example: () => (
+      <>
+        <Text>Example</Text>
+        <Button title="Go back" onPress={() => navio.goBack()} />
+      </>
+    ),
+    Settings: {
+      component: () => (
+        <>
+          <Text>Settings</Text>
+          <Button title="Jump to tab" onPress={() => navio.tabs.jumpTo('HomeTab')} />
+        </>
+      ),
+      options: () => ({
+        headerTitleStyle: {color: 'red'},
+      }),
     },
   },
+  stacks: {
+    HomeStack: ['Home', 'Example'],
+  },
+  drawers: {
+    AppDrawer: {
+      content: {
+        Main: 'HomeStack',
+        Playground: ['Playground'],
+        Settings: ['Settings'],
+      },
+    },
+  },
+  root: 'AppDrawer',
 });
 
 export default () => <navio.Root />;
@@ -216,6 +267,7 @@ type Stack =
   | ScreenName[]
   | {
       screens: ScreenName[];
+      containerOptions?: ContainerOptions;
       navigatorProps?: NativeStackNavigatorProps;
     };
 ```
@@ -253,6 +305,7 @@ type Tabs = Record<string, Tab>;
 
 type Tab = {
   content: Record<string, ContentValue>;
+  containerOptions?: ContainerOptions;
   navigatorProps?: any;
 };
 
@@ -302,6 +355,7 @@ type Drawers = Record<string, Drawer>;
 
 type Drawer = {
   content: Record<string, ContentValue>;
+  containerOptions?: ContainerOptions;
   navigatorProps?: any;
 };
 
@@ -391,15 +445,29 @@ const navio = Navio.build({
 
 ### Default options
 
-Default options that will be applied per each `Stacks`'s, `Tabs`'s or `Drawer`'s screens generated within the app.
+Default options that will be applied per each `Stacks`'s, `Tabs`'s, `Drawer`'s, or `Modal`'s screens and containers generated within the app.
+
+`Note` All containers and `Tabs`'s and `Drawer`'s screens options have `headerShown: false` by default (in order to hide unnecessary navigation headers). You can always change them which might be useful if you want to have a native `< Back` button when hiding tabs (pushing new `Stack`).
 
 #### Definition
 
 ```tsx
 type DefaultOptions = {
-  stack?: NativeStackNavigationOptions;
-  tab?: BottomTabNavigationOptions;
-  drawer?: DrawerNavigationOptions;
+  stacks?: {
+    screen?: StackScreenOptions;
+    container?: ContainerOptions;
+  };
+  tabs?: {
+    screen?: TabScreenOptions;
+    container?: ContainerOptions;
+  };
+  drawers?: {
+    screen?: DrawerScreenOptions;
+    container?: ContainerOptions;
+  };
+  modals?: {
+    container?: ContainerOptions;
+  };
 };
 ```
 
@@ -408,12 +476,21 @@ type DefaultOptions = {
 ```tsx
 const navio = Navio.build({
   defaultOptions: {
-    stack: {
-      headerShadowVisible: false,
-      headerTintColor: Colors.primary,
+    stacks: {
+      screen: {
+        headerShadowVisible: false,
+        headerTintColor: Colors.primary,
+      },
+      container: {
+        headerShown: true,
+      },
     },
-    tab: tabDefaultOptions,
-    drawer: drawerDefaultOptions,
+    tabs: {
+      screen: tabDefaultOptions,
+    },
+    drawer: {
+      screen: drawerDefaultOptions,
+    },
   },
 });
 ```
