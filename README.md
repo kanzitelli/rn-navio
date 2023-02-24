@@ -509,9 +509,13 @@ You can change the root of the app by `navio.setRoot('drawers', 'MainDrawer')` o
 
 ## Navigation
 
-Navio provides a colleciton of actions to perform navigation with the app. Most of the methods are similar to ones from [React Navigation](https://github.com/react-navigation/react-navigation).
+Navio provides a colleciton of actions to perform navigation within the app.
 
 ### Common
+
+#### `navio.N`
+
+Current navigation instance (from React Navigation). You can perform any of [these actions](https://reactnavigation.org/docs/navigation-actions).
 
 #### `navio.push(name, params?)`
 
@@ -556,6 +560,10 @@ Tabs-related actions.
 #### `navio.tabs.jumpTo(name)`
 
 Can be used to jump to an existing route in the tab navigator.
+
+#### `navio.tabs.updateOptions(name, options)`
+
+Updates options for a given tab. Can be used to change badge count.
 
 #### `navio.tabs.setRoot(name)`
 
@@ -609,9 +617,11 @@ There are still some things I would like to add to the library:
 
 - [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
+- [ ] Make deeplinking easier by providing `linking` prop to screens/stacks.
 - [ ] `.updateOptions()` for all stacks. It's quite hard to achieve without any re-render. So it takes some time and probably will be relased in v`0.1.0`.
 - [ ] `.updateProps()` for all stacks.
-- [ ] Extend Navio funtionality and app layout .
+- [ ] Extend Navio funtionality and app layout.
+- [ ] Easy integration of Navio with React Navigation (eg. navio.Stack())
 - [ ] TypeScript issues @ `index.tsx` file.
 
 Feel free to open an issue for any suggestions.
