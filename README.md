@@ -495,17 +495,17 @@ const navio = Navio.build({
 });
 ```
 
-## App root
+## App
 
 Navio generates root component for the app after the layout is defined. It can be used to directly pass it to `registerRootComponent()` or to wrap with extra providers or add more logic before the app's start up.
 
 ```tsx
 const navio = Navio.build({...});
 
-export default () => <navio.Root />
+export default () => <navio.App />
 ```
 
-You can change the root of the app by `navio.setRoot('drawers', 'MainDrawer')` or by changing `initialRouteName` of `<navio.Root />` component.
+You can change the root of the app by `navio.setRoot('drawers', 'MainDrawer')` or by changing `initialRouteName` of `<navio.App />` component.
 
 ## Navigation
 
@@ -615,11 +615,10 @@ If you've found any diffilculties with using Navio and [React Navigation](https:
 
 There are still some things I would like to add to the library:
 
+- [x] `.updateOptions()` for specific tab.
 - [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
-- [ ] Make deeplinking easier by providing `linking` prop to screens/stacks.
-- [ ] `.updateOptions()` for all stacks. It's quite hard to achieve without any re-render. So it takes some time and probably will be relased in v`0.1.0`.
-- [ ] `.updateProps()` for all stacks.
+- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Extend Navio funtionality and app layout.
 - [ ] Easy integration of Navio with React Navigation (eg. navio.Stack())
 - [ ] TypeScript issues @ `index.tsx` file.
