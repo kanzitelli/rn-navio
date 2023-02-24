@@ -961,11 +961,9 @@ export class Navio<
   };
 
   /**
-   * Generates `<Root />` component for provided layout. On top of `<NavigationContainer />`.
-   * Can be used as `<AppProviders><navio.Root /></AppProviders>`
+   * Generates `<Root />` component for provided layout. Returns Stack Navigator.
    */
-  Root: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
-    navigationContainerProps,
+  private Root: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
     initialRouteName,
   }) => {
     const {stacks, tabs, modals, drawers, root} = this.layout;
@@ -979,19 +977,6 @@ export class Navio<
         this.__setRoot(initialRouteName);
       }
     }, [initialRouteName]);
-
-    // Internal methods
-    const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
-      this.navRef.current = instance;
-    };
-
-    const _navContainerOnReady = () => {
-      this.navIsReadyRef.current = true;
-
-      if (navigationContainerProps?.onReady) {
-        navigationContainerProps?.onReady();
-      }
-    };
 
     // UI Methods
     // -- app stacks
@@ -1034,8 +1019,8 @@ export class Navio<
       );
     }, [modals]);
 
-    // -- building root
-    const App = useMemo(() => {
+    // -- app root
+    const AppRoot = useMemo(() => {
       return (
         <AppStack.Navigator initialRouteName={appRoot as string}>
           {/* Stacks */}
@@ -1053,13 +1038,37 @@ export class Navio<
       );
     }, [appRoot]);
 
+    return AppRoot;
+  };
+
+  /**
+   * Generates your app's root component for provided layout.
+   * Can be used as `<AppProviders><navio.App /></AppProviders>`
+   */
+  App: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
+    navigationContainerProps,
+    initialRouteName,
+  }) => {
+    // Navigation-related methods
+    const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
+      this.navRef.current = instance;
+    };
+
+    const _navContainerOnReady = () => {
+      this.navIsReadyRef.current = true;
+
+      if (navigationContainerProps?.onReady) {
+        navigationContainerProps?.onReady();
+      }
+    };
+
     return (
       <NavigationContainer
         {...navigationContainerProps}
         ref={_navContainerRef}
         onReady={_navContainerOnReady}
       >
-        {App}
+        <this.Root initialRouteName={initialRouteName} />
       </NavigationContainer>
     );
   };
