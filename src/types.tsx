@@ -11,9 +11,12 @@ export type ContentKeys<T extends {content: any}> = Keys<T['content']>;
 export type RootSetAs = keyof Pick<Layout, 'stacks' | 'tabs' | 'drawers'>;
 
 // Options
+export type BaseOptionsProps =
+  | {route?: RouteProp<ParamListBase, string>; navigation?: any}
+  | undefined;
 export type BaseOptions<Return = NativeStackNavigationOptions> =
   | Return
-  | ((props?: {route?: RouteProp<ParamListBase, string>; navigation?: any}) => Return);
+  | ((props?: BaseOptionsProps) => Return);
 type ScreenOptions = BaseOptions<NativeStackNavigationOptions>;
 export type StackScreenOptions = ScreenOptions;
 export type ModalScreenOptions = ScreenOptions;
@@ -45,6 +48,7 @@ export type TStackData<ScreensName> = ScreensName[] | TStackDataObj<ScreensName>
 export type TTabContentData<ScreensName, StacksName> = {
   stack: TStackDefinition<ScreensName, StacksName>;
   options?: TabScreenOptions;
+  // updateOptions?: any;
 };
 export type TTabsContentValue<ScreensName, StacksName> =
   | TStackDefinition<ScreensName, StacksName>
@@ -154,3 +158,17 @@ export type RootProps<RootName extends string> = {
   navigationContainerProps?: Omit<ExtractProps<typeof NavigationContainer>, 'children'>;
   initialRouteName?: RootName;
 };
+
+// Tunnel (Event Emitter)
+export type TunnelEvent$Tabs$UpdateOptions$Params<
+  Name = string,
+  Options = BottomTabNavigationOptions,
+> = {
+  name: Name;
+  options: Options;
+};
+
+export type TunnelEvent = 'tabs.updateOptions';
+export type TunnelParams<T = any> = T;
+export type TunnelListener = (params: TunnelParams) => void;
+export type TunnelEvents = Partial<Record<TunnelEvent, TunnelListener[]>>;
