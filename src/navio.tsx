@@ -31,8 +31,6 @@ import {
   TDrawersData,
   TDrawerDefinition,
   TTabsDefinition,
-  TTabContentData,
-  TDrawerContentData,
   RootSetAs,
   TTabsContentValue,
   TDrawerContentValue,
@@ -52,9 +50,9 @@ export class Navio<
   //
   ScreensData extends TScreenData,
   StacksData extends TStackData<ScreensName>,
-  TabsData extends TTabsData<ScreensName, StacksName>,
+  TabsData extends TTabsData<ScreensName, StacksName, DrawersName>,
   ModalsData extends TModalData<ScreensName, StacksName>,
-  DrawersData extends TDrawersData<ScreensName, StacksName>,
+  DrawersData extends TDrawersData<ScreensName, StacksName, TabsName>,
   //
   TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
   DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
@@ -79,9 +77,9 @@ export class Navio<
     //
     ScreensData extends TScreenData,
     StacksData extends TStackData<ScreensName>,
-    TabsData extends TTabsData<ScreensName, StacksName>,
+    TabsData extends TTabsData<ScreensName, StacksName, DrawersName>,
     ModalsData extends TModalData<ScreensName, StacksName>,
-    DrawersData extends TDrawersData<ScreensName, StacksName>,
+    DrawersData extends TDrawersData<ScreensName, StacksName, TabsName>,
     //
     TabsContentName extends ContentKeys<TabsData> = ContentKeys<TabsData>,
     DrawersContentName extends ContentKeys<DrawersData> = ContentKeys<DrawersData>,
@@ -700,7 +698,7 @@ export class Navio<
     const {tabs} = this.layout;
     if (tabs === undefined) return undefined;
 
-    const currentTabs: TTabsData<ScreensName, StacksName> | undefined =
+    const currentTabs: TTabsData<ScreensName, StacksName, DrawersName> | undefined =
       typeof definition === 'string' ? tabs[definition] : undefined;
 
     return currentTabs;
@@ -820,15 +818,21 @@ export class Navio<
   private TabScreen: React.FC<{
     TabNavigator: ReturnType<typeof createBottomTabNavigator>;
     name: string; // TabsContentName
-    content: TTabsContentValue<ScreensName, StacksName>;
+    content: TTabsContentValue<ScreensName, StacksName, DrawersName>;
   }> = ({TabNavigator, name, content}) => {
-    const tcs = content as any;
-    const stackDef =
-      typeof tcs === 'object' && tcs['stack']
-        ? (tcs as TTabContentData<ScreensName, StacksName>).stack
-        : (tcs as TStackDefinition<ScreensName, StacksName>);
+    if (!content.stack && !content.drawer) {
+      this.log(`Either 'stack' or 'drawer' must be provided for "${name}" tabs content.`);
+      return null;
+    }
 
-    const C = () => this.Stack({stackDef});
+    // component
+    const C = () =>
+      content.stack
+        ? this.Stack({stackDef: content.stack})
+        : content.drawer
+        ? this.Drawer({drawerDef: content.drawer})
+        : null;
+
     return <TabNavigator.Screen key={name} name={name} component={C} />;
   };
 
@@ -837,7 +841,7 @@ export class Navio<
     const {drawers} = this.layout;
     if (drawers === undefined) return undefined;
 
-    const current: TDrawersData<ScreensName, StacksName> | undefined =
+    const current: TDrawersData<ScreensName, StacksName, TabsName> | undefined =
       typeof definition === 'string' ? drawers[definition] : undefined;
 
     return current;
@@ -879,7 +883,7 @@ export class Navio<
       return <></>;
     }
 
-    const currentDrawer: TDrawersData<ScreensName, StacksName> | undefined =
+    const currentDrawer: TDrawersData<ScreensName, StacksName, TabsName> | undefined =
       typeof drawerDef === 'string' ? drawers[drawerDef] : undefined;
     if (!currentDrawer) {
       this.log('No drawer found');
@@ -911,23 +915,27 @@ export class Navio<
   private DrawerScreen: React.FC<{
     DrawerNavigator: ReturnType<typeof createDrawerNavigator>;
     name: string;
-    content: TDrawerContentValue<ScreensName, StacksName>;
+    content: TDrawerContentValue<ScreensName, StacksName, TabsName>;
   }> = ({DrawerNavigator, name, content}) => {
     const {defaultOptions} = this.layout;
 
-    const dcs = content as any;
-    const stackDef =
-      typeof dcs === 'object' && dcs['stack']
-        ? (dcs as TDrawerContentData<ScreensName, StacksName>).stack
-        : (dcs as TStackDefinition<ScreensName, StacksName>);
+    if (!content.stack && !content.tabs) {
+      this.log(`Either 'stack' or 'tabs' must be provided for "${name}" drawer content.`);
+      return null;
+    }
 
     // component
-    const C = () => this.Stack({stackDef});
+    const C = () =>
+      content.stack
+        ? this.Stack({stackDef: content.stack})
+        : content.tabs
+        ? this.Tabs({tabsDef: content.tabs})
+        : null;
 
     // options
     const customDefaultOptions = this.getCustomDefaultOptions()?.drawers?.screen ?? {};
     const dcsDefaultOptions = defaultOptions?.drawers?.screen ?? {};
-    const dcsOpts = dcs?.options ?? {};
+    const dcsOpts = content?.options ?? {};
     const Opts: BaseOptions<DrawerNavigationOptions> = props => ({
       ...safeOpts(customDefaultOptions)(props), // [!] custom default options
       ...safeOpts(dcsDefaultOptions)(props), // navio.defaultOptions.drawers.screen
