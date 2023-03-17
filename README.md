@@ -7,6 +7,8 @@ Navio is a navigation library for React Native (compatible with Expo) built on t
 
 Navio lets you easily create different kinds of apps: bottom tabs-based, simple single-screen, and apps with drawer layouts. It takes care of all boilerplate code configuration for Navigators, Screens, Stacks, Tabs, and Drawers under the hood, so you can focus on developing your app functionality.
 
+> If `Navio` helped you in any way, don't hesitate to ⭐️ the repo!
+
 ☣️ <i>Navio is still a young library and may have breaking changes in the future.</i>
 
 ## Quickstart
@@ -42,75 +44,45 @@ npx cli-rn new app
 
 Play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-navio-snack).
 
-## Usage
+## Examples
 
 ### 2 screens
+
+Simple app with 2 screens.
 
 <details>
 <summary>Show code</summary>
 
 ```tsx
 import {Navio} from 'rn-navio';
+import {Home, Settings} from '@app/screens';
 
 const navio = Navio.build({
-  screens: {
-    Home: () => (
-      <>
-        <Text>Home</Text>
-        <Button title="Push" onPress={() => navio.push('Example')} />
-      </>
-    ),
-    Example: () => (
-      <>
-        <Text>Example</Text>
-        <Button title="Go back" onPress={() => navio.goBack()} />
-      </>
-    ),
+  screens: {Home, Settings},
+  stacks: {
+    Main: ['Home', 'Settings'],
   },
+  root: 'Main',
 });
 
-export default () => <navio.Root />;
+export default () => <navio.App />;
 ```
 
 </details>
 
 ### Tabs
 
+Tab-based app with 3 tabs.
+
 <details>
 <summary>Show code</summary>
 
 ```tsx
 import {Navio} from 'rn-navio';
+import {Home, Example, Playground, Settings} from '@app/screens';
 
 const navio = Navio.build({
-  screens: {
-    Home: () => (
-      <>
-        <Text>Home</Text>
-        <Button title="Push" onPress={() => navio.push('Example')} />
-        <Button title="Push stack" onPress={() => navio.stacks.push('HomeStack')} />
-        <Button title="Set Root - Stack" onPress={() => navio.stacks.setRoot('HomeStack')} />
-        <Button title="Set Root - Tabs" onPress={() => navio.setRoot('tabs', 'AppTabs')} />
-      </>
-    ),
-    Example: () => (
-      <>
-        <Text>Example</Text>
-        <Button title="Go back" onPress={() => navio.goBack()} />
-      </>
-    ),
-    Settings: {
-      component: () => (
-        <>
-          <Text>Settings</Text>
-          <Button title="Jump to tab" onPress={() => navio.tabs.jumpTo('HomeTab')} />
-        </>
-      ),
-      options: () => ({
-        headerTitleStyle: {color: 'red'},
-      }),
-    },
-  },
+  screens: {Home, Example, Playground, Settings},
   stacks: {
     HomeStack: ['Home', 'Example'],
   },
@@ -127,13 +99,12 @@ const navio = Navio.build({
           stack: ['Playground'],
           options: () => ({
             title: 'Playground',
-            tabBarIcon: getTabBarIcon('PlaygroundTab'),
           }),
         },
         SettingsTab: {
           stack: ['Settings'],
           options: () => ({
-            title: services.t.do('settings.title'),
+            title: 'Settings',
           }),
         },
       },
@@ -142,48 +113,24 @@ const navio = Navio.build({
   root: 'AppTabs',
 });
 
-export default () => <navio.Root />;
+export default () => <navio.App />;
 ```
 
 </details>
 
 ### Drawer
 
+Simple app with drawer and 3 stacks.
+
 <details>
 <summary>Show code</summary>
 
 ```tsx
 import {Navio} from 'rn-navio';
+import {Home, Example, Playground, Settings} from '@app/screens';
 
 const navio = Navio.build({
-  screens: {
-    Home: () => (
-      <>
-        <Text>Home</Text>
-        <Button title="Push" onPress={() => navio.push('Example')} />
-        <Button title="Push stack" onPress={() => navio.stacks.push('HomeStack')} />
-        <Button title="Set Root - Stack" onPress={() => navio.stacks.setRoot('HomeStack')} />
-        <Button title="Set Root - Tabs" onPress={() => navio.setRoot('tabs', 'AppTabs')} />
-      </>
-    ),
-    Example: () => (
-      <>
-        <Text>Example</Text>
-        <Button title="Go back" onPress={() => navio.goBack()} />
-      </>
-    ),
-    Settings: {
-      component: () => (
-        <>
-          <Text>Settings</Text>
-          <Button title="Jump to tab" onPress={() => navio.tabs.jumpTo('HomeTab')} />
-        </>
-      ),
-      options: () => ({
-        headerTitleStyle: {color: 'red'},
-      }),
-    },
-  },
+  screens: {Home, Example, Playground, Settings},
   stacks: {
     HomeStack: ['Home', 'Example'],
   },
@@ -199,12 +146,134 @@ const navio = Navio.build({
   root: 'AppDrawer',
 });
 
-export default () => <navio.Root />;
+export default () => <navio.App />;
 ```
 
 </details>
 
-### Advanced example
+### Auth flow
+
+There are two ways of handling `Auth` flow with Navio: Static and Dynamic.
+
+<details>
+<summary>Static - Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Main, SignIn, SignUp} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {Main, SignIn, SignUp},
+  stacks: {
+    MainApp: ['Main'],
+    Auth: ['SignIn', 'SignUp'],
+  },
+  root: 'MainApp',
+});
+
+// Let's say you show `MainApp` in the beginning with limited functionality
+// and have some screen with "Sign in" button. After pressing "Sign in",
+// you can show `Auth` flow.
+const Screen = () => {
+  const {navio} = useServices();
+
+  const onSignInPressed = () => {
+    navio.setRoot('stacks', 'Auth');
+  };
+
+  return <>{Content}</>;
+};
+
+// After `Auth` flow is successfully finished, you can show `MainApp`.
+navio.setRoot('stacks', 'MainApp');
+
+export default () => <navio.App />;
+```
+
+</details>
+
+<details>
+<summary>Dynamic - Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Main, SignIn, SignUp} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {Main, SignIn, SignUp},
+  stacks: {
+    MainApp: ['Main'],
+    Auth: ['SignIn', 'SignUp'],
+  },
+  root: 'MainApp',
+});
+
+// Let's say you want to react on changes from auth provider (stores, hook, etc.)
+// and show root app depending on that value.
+export default (): JSX.Element => {
+  const {authData} = useAuth();
+  const isLoggedIn = !!authData;
+
+  return (
+    <SomeProviders>
+      <navio.App initialRouteName={isLoggedIn ? 'MainApp' : 'Auth'} />
+    </SomeProviders>
+  );
+};
+```
+
+</details>
+
+### Hide tabs
+
+Hide tabs on a specific screen.
+
+As React Navigation suggests in the [docs](https://reactnavigation.org/docs/hiding-tabbar-in-screens/), we need to define a stack that we want to "push over" tabs.
+
+<details>
+<summary>Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Home, Product, Playground, Settings} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {
+    Home,
+    Settings,
+
+    ProductPage: {
+      component: Product,
+      options: {
+        headerShown: false,
+      },
+    },
+  },
+  stacks: {
+    ProductPageStack: {
+      screens: ['ProductPage'],
+      containerOptions: {
+        headerShown: true,
+        title: 'Product page',
+      },
+    },
+  },
+  tabs: {
+    AppTabs: {
+      content: {
+        Home: ['Home'],
+        Settings: ['Settings'],
+      },
+    },
+  },
+  root: 'AppTabs',
+});
+
+// Now you can push `ProductPageStack` from tabs and it will be without tabs.
+navio.stacks.push('ProductPageStack');
+```
+
+</details>
 
 Advanced example with all available props can be found @ [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
 
