@@ -50,9 +50,6 @@ Play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-
 
 Simple app with 2 screens.
 
-<details>
-<summary>Show code</summary>
-
 ```tsx
 import {Navio} from 'rn-navio';
 import {Home, Settings} from '@app/screens';
@@ -67,8 +64,6 @@ const navio = Navio.build({
 
 export default () => <navio.App />;
 ```
-
-</details>
 
 ### Tabs
 
