@@ -155,7 +155,7 @@ export type NavioScreen<Props = {}> = React.FC<PropsWithChildren<Props>> & {
 // Layouts
 export type RootProps<RootName extends string> = {
   navigationContainerProps?: Omit<ExtractProps<typeof NavigationContainer>, 'children'>;
-  initialRouteName?: RootName;
+  root?: RootName;
 };
 
 // Tunnel (Event Emitter)

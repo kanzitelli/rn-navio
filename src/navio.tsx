@@ -972,19 +972,19 @@ export class Navio<
    * Generates `<Root />` component for provided layout. Returns Stack Navigator.
    */
   private Root: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
-    initialRouteName,
+    root: parentRoot,
   }) => {
     const {stacks, tabs, modals, drawers, root} = this.layout;
-    const appRoot = initialRouteName ?? root;
+    const appRoot = parentRoot ?? root;
     const AppStack = createNativeStackNavigator();
 
     // Effects
     useEffect(() => {
-      // -- changing route if `initialRouteName` was changed
-      if (initialRouteName) {
-        this.__setRoot(initialRouteName);
+      // -- changing route if `root` was changed
+      if (parentRoot) {
+        this.__setRoot(parentRoot);
       }
-    }, [initialRouteName]);
+    }, [parentRoot]);
 
     // UI Methods
     // -- app stacks
@@ -1055,7 +1055,7 @@ export class Navio<
    */
   App: React.FC<RootProps<TRootName<StacksName, TabsName, DrawersName>>> = ({
     navigationContainerProps,
-    initialRouteName,
+    root: parentRoot,
   }) => {
     // Navigation-related methods
     const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
@@ -1076,7 +1076,7 @@ export class Navio<
         ref={_navContainerRef}
         onReady={_navContainerOnReady}
       >
-        <this.Root initialRouteName={initialRouteName} />
+        <this.Root root={parentRoot} />
       </NavigationContainer>
     );
   };
