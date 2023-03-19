@@ -39,39 +39,38 @@ export type TScreenData<Props = {}> =
       component: NavioScreen<Props>;
       options?: ScreenOptions;
     };
+// Stack
 export type TStackDataObj<ScreensName> = {
   screens: ScreensName[];
   containerOptions?: ContainerOptions;
   navigatorProps?: Omit<NativeStackNavigatorProps, 'children'>; // omitting required children prop
 };
 export type TStackData<ScreensName> = ScreensName[] | TStackDataObj<ScreensName>;
-export type TTabContentData<ScreensName, StacksName> = {
-  stack: TStackDefinition<ScreensName, StacksName>;
+// Tabs
+export type TTabsContentValue<ScreensName, StacksName, DrawersName> = {
+  stack?: TStackDefinition<ScreensName, StacksName>;
+  drawer?: TDrawerDefinition<DrawersName>;
   options?: TabScreenOptions;
-  // updateOptions?: any;
 };
-export type TTabsContentValue<ScreensName, StacksName> =
-  | TStackDefinition<ScreensName, StacksName>
-  | TTabContentData<ScreensName, StacksName>;
-export type TTabsData<ScreensName, StacksName> = {
-  content: Record<string, TTabsContentValue<ScreensName, StacksName>>;
+export type TTabsData<ScreensName, StacksName, DrawersName> = {
+  content: Record<string, TTabsContentValue<ScreensName, StacksName, DrawersName>>;
   containerOptions?: ContainerOptions;
   navigatorProps?: any; // TODO BottomTabNavigatorProps doesn't exist :(
 };
-// export type TTabUpdatedOptions = {name: string; options: BaseOptions<BottomTabNavigationOptions>};
-export type TModalData<ScreensName, StacksName> = TStackDefinition<ScreensName, StacksName>;
-export type TDrawerContentData<ScreensName, StacksName> = {
-  stack: TStackDefinition<ScreensName, StacksName>;
+// Drawer
+export type TDrawerContentValue<ScreensName, StacksName, TabsName> = {
+  stack?: TStackDefinition<ScreensName, StacksName>;
+  tabs?: TTabsDefinition<TabsName>;
   options?: DrawerScreenOptions;
 };
-export type TDrawerContentValue<ScreensName, StacksName> =
-  | TStackDefinition<ScreensName, StacksName>
-  | TDrawerContentData<ScreensName, StacksName>;
-export type TDrawersData<ScreensName, StacksName> = {
-  content: Record<string, TDrawerContentValue<ScreensName, StacksName>>;
+export type TDrawersData<ScreensName, StacksName, TabsName> = {
+  content: Record<string, TDrawerContentValue<ScreensName, StacksName, TabsName>>;
   containerOptions?: ContainerOptions;
   navigatorProps?: any; // TODO DrawerNavigatorProps doesn't exist :(
 };
+// Modal
+export type TModalData<ScreensName, StacksName> = TStackDefinition<ScreensName, StacksName>;
+
 export type TRootName<StacksName, TabsName, DrawersName> = TabsName | StacksName | DrawersName;
 export type ExtractProps<Type> = Type extends React.FC<infer X> ? X : never;
 
@@ -156,19 +155,16 @@ export type NavioScreen<Props = {}> = React.FC<PropsWithChildren<Props>> & {
 // Layouts
 export type RootProps<RootName extends string> = {
   navigationContainerProps?: Omit<ExtractProps<typeof NavigationContainer>, 'children'>;
-  initialRouteName?: RootName;
+  root?: RootName;
 };
 
 // Tunnel (Event Emitter)
-export type TunnelEvent$Tabs$UpdateOptions$Params<
-  Name = string,
-  Options = BottomTabNavigationOptions,
-> = {
+export type TunnelEvent$UpdateOptions$Params<Name = string, Options = any> = {
   name: Name;
   options: Options;
 };
 
-export type TunnelEvent = 'tabs.updateOptions';
+export type TunnelEvent = 'tabs.updateOptions' | 'drawer.updateOptions';
 export type TunnelParams<T = any> = T;
 export type TunnelListener = (params: TunnelParams) => void;
 export type TunnelEvents = Partial<Record<TunnelEvent, TunnelListener[]>>;

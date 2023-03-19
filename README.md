@@ -50,9 +50,6 @@ Play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-
 
 Simple app with 2 screens.
 
-<details>
-<summary>Show code</summary>
-
 ```tsx
 import {Navio} from 'rn-navio';
 import {Home, Settings} from '@app/screens';
@@ -67,8 +64,6 @@ const navio = Navio.build({
 
 export default () => <navio.App />;
 ```
-
-</details>
 
 ### Tabs
 
@@ -85,6 +80,8 @@ const navio = Navio.build({
   screens: {Home, Example, Playground, Settings},
   stacks: {
     HomeStack: ['Home', 'Example'],
+    PlaygroundStack: ['Playground'],
+    SettingsStack: ['Settings'],
   },
   tabs: {
     AppTabs: {
@@ -96,13 +93,13 @@ const navio = Navio.build({
           }),
         },
         PlaygroundTab: {
-          stack: ['Playground'],
+          stack: 'PlaygroundStack',
           options: () => ({
             title: 'Playground',
           }),
         },
         SettingsTab: {
-          stack: ['Settings'],
+          stack: 'SettingsStack',
           options: () => ({
             title: 'Settings',
           }),
@@ -275,7 +272,149 @@ navio.stacks.push('ProductPageStack');
 
 </details>
 
-Advanced example with all available props can be found @ [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
+### Drawer with tabs
+
+Opens app with main drawer and tabs inside one of the drawer content. It can be used to build Twitter like app's layout.
+
+<details>
+<summary>Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Home, Settings} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  tabs: {
+    SomeTabs: {
+      content: {
+        Home: {
+          stack: ['Home'],
+        },
+        Settings: {
+          stack: ['Settings'],
+        },
+      },
+    },
+  },
+  drawers: {
+    MainDrawer: {
+      content: {
+        Main: {
+          stack: ['Home'],
+        },
+        Tabs: {
+          tabs: 'SomeTabs',
+        },
+      },
+    },
+  },
+  root: 'MainDrawer',
+});
+
+export default () => <navio.App />;
+```
+
+</details>
+
+### Tabs with drawer
+
+Opens 2 tabs app with a drawer inside one of the tab. It can be used for showing product categories or similar.
+
+<details>
+<summary>Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Home, PlaygroundFlashList, PlaygroundExpoImage, Settings} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  tabs: {
+    SomeTabs: {
+      content: {
+        Home: {
+          stack: ['Home'],
+        },
+        Settings: {
+          drawer: 'DrawerForTabs',
+        },
+      },
+    },
+  },
+  drawers: {
+    DrawerForTabs: {
+      content: {
+        FlashList: {
+          stack: ['PlaygroundFlashList'],
+          options: {
+            title: 'Flash List',
+            drawerPosition: 'right',
+          },
+        },
+        ExpoImage: {
+          stack: ['PlaygroundExpoImage'],
+          options: {
+            title: 'Expo Image',
+            drawerPosition: 'right',
+          },
+        },
+      },
+    },
+  },
+  root: 'MainDrawer',
+});
+
+export default () => <navio.App />;
+```
+
+</details>
+
+### Drawer with custom content
+
+Opens app with main drawer with custom content.
+
+<details>
+<summary>Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Home, Settings} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  drawers: {
+    MainDrawer: {
+      content: {
+        Main: {
+          stack: ['Home'],
+        },
+        Settings: {
+          stack: ['Settings'],
+        },
+      },
+
+      navigatorProps: {
+        drawerContent: (props: any) => (
+          <DrawerContentScrollView {...props}>
+            <DrawerItemList {...props} />
+
+            <View style={{height: 1, backgroundColor: 'black'}} />
+            <DrawerItem label="Close drawer" onPress={() => navio.drawers.close()} />
+          </DrawerContentScrollView>
+        ),
+      },
+    },
+  },
+  root: 'MainDrawer',
+});
+
+export default () => <navio.App />;
+```
+
+</details>
+
+Advanced example with all available props can be found at [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
 
 ## Layout
 
@@ -285,9 +424,10 @@ Navio requires only `screens` prop to build an app layout. `stacks`, `tabs`, `dr
 
 These are main bricks of your app with Navio. You can reuse them for any stack you want to build.
 
-#### Definition
-
 A screen can be defined by passing a plain React component. If you'd like to pass some options which describe the screen, then you can pass an object as well.
+
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type Screens = Record<string, Screen>;
@@ -300,7 +440,10 @@ type Screen =
     };
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 import {ScreenOne} from './screens/one.tsx';
@@ -321,13 +464,16 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Stacks
 
 Stacks are built using `Screens` that have been defined before. IDEs should help with autocompletion for better DX.
 
-#### Definition
-
 A stack can be defined by passing an array of `Screens`. If you'd like to pass some options down to stack navigator, then you can pass an object.
+
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type Stacks = Record<string, Stack>;
@@ -341,7 +487,10 @@ type Stack =
     };
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -359,15 +508,18 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Tabs
 
-Tabs are built using `Screens` and `Stacks` that have been defined before.
-
-#### Definition
+Tabs are built using `Screens`, `Stacks`, and `Drawers` that have been defined before.
 
 Tabs can be defined by passing an object with `content` and, optionally, props for navigator.
 
-Content can take as a value one of `Stacks`, array of `Screens`, or an object that describes stack and options for bottom tab (describing title, icon, etc.).
+Content can take as a value one of `Stacks`, `Drawers`, array of `Screens`, or an object that describes stack and options for bottom tab (describing title, icon, etc.).
+
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type Tabs = Record<string, Tab>;
@@ -379,12 +531,16 @@ type Tab = {
 };
 
 type ContentValue = {
-  stack: StackDefinition;
+  stack?: StackDefinition;
+  drawer?: DrawerDefinition;
   options?: BaseOptions<BottomTabNavigationOptions>;
 };
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -409,15 +565,18 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Drawers
 
-Drawers are built using `Screens` and `Stacks` that have been defined before.
-
-#### Definition
+Drawers are built using `Screens`, `Stacks`, and `Tabs` that have been defined before.
 
 Drawers can be defined by passing an object with `content` and, optionally, props for navigator.
 
-Content can take as a value one of `Stacks`, array of `Screens`, or an object that describes stack and options for bottom tab (describing title, icon, etc.).
+Content can take as a value one of `Stacks`, `Tabs`, array of `Screens`, or an object that describes stack and options for bottom tab (describing title, icon, etc.).
+
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type Drawers = Record<string, Drawer>;
@@ -429,12 +588,16 @@ type Drawer = {
 };
 
 type DrawerContentValue = {
-  stack: StackDefinition;
+  stack?: StackDefinition;
+  tabs?: TabsDefinition;
   options?: BaseOptions<DrawerNavigationOptions>;
 };
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -450,13 +613,16 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Modals
 
 Modals are built using `Screens` and `Stacks` that have been defined before. You can show/present them at any point of time while using the app.
 
-#### Definition
-
 A modal can be defined by passing an array of `Screens` or a name of `Stacks`.
+
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type Modals = Record<string, Modal>;
@@ -464,7 +630,10 @@ type Modals = Record<string, Modal>;
 type Modal = StackDefinition;
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -474,19 +643,25 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Root
 
 This is a root name of the app. It can be one of `Stacks`, `Tabs` or `Drawers`.
 
 You can change the root of the app later by `navio.setRoot('drawers', 'MainDrawer')` or by changing `initialRouteName` of `<navio.Root />` component.
 
-#### Definition
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type RootName = StacksName | TabsName | DrawersName;
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -494,17 +669,23 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Hooks
 
 List of hooks that will be run on each generated `Stacks`, `Tabs` or `Drawers` navigators. Useful for dark mode or language change.
 
-#### Definition
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type Hooks = Function[];
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -512,13 +693,16 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ### Default options
 
 Default options that will be applied per each `Stacks`'s, `Tabs`'s, `Drawer`'s, or `Modal`'s screens and containers generated within the app.
 
 `Note` All containers and `Tabs`'s and `Drawer`'s screens options have `headerShown: false` by default (in order to hide unnecessary navigation headers). You can always change them which might be useful if you want to have a native `< Back` button when hiding tabs (pushing new `Stack`).
 
-#### Definition
+<details>
+<summary>Definition</summary>
 
 ```tsx
 type DefaultOptions = {
@@ -540,7 +724,10 @@ type DefaultOptions = {
 };
 ```
 
-#### Example
+</details>
+
+<details>
+<summary>Example</summary>
 
 ```tsx
 const navio = Navio.build({
@@ -564,6 +751,8 @@ const navio = Navio.build({
 });
 ```
 
+</details>
+
 ## App
 
 Navio generates root component for the app after the layout is defined. It can be used to directly pass it to `registerRootComponent()` or to wrap with extra providers or add more logic before the app's start up.
@@ -586,19 +775,19 @@ Navio provides a colleciton of actions to perform navigation within the app.
 
 Current navigation instance (from React Navigation). You can perform any of [these actions](https://reactnavigation.org/docs/navigation-actions).
 
-#### `navio.push(name, params?)`
+#### `.push(name, params?)`
 
 Adds a route on top of the stack and navigates forward to it.
 
-#### `navio.goBack()`
+#### `.goBack()`
 
 Allows to go back to the previous route in history.
 
-#### `navio.setParams(name, params)`
+#### `.setParams(name, params)`
 
 Allows to update params for a certain route.
 
-#### `navio.setRoot(as, rootName)`
+#### `.setRoot(as, rootName)`
 
 Sets a new app root. It can be used to switch between `Stacks`, `Tabs`, and `Drawers`.
 
@@ -606,19 +795,19 @@ Sets a new app root. It can be used to switch between `Stacks`, `Tabs`, and `Dra
 
 Stacks-related actions.
 
-#### `navio.stacks.push(name)`
+#### `.stacks.push(name)`
 
 Adds a route on top of the stack and navigates forward to it. It can hide tab bar.
 
-#### `navio.stacks.pop(count?)`
+#### `.stacks.pop(count?)`
 
 Takes you back to a previous screen in the stack.
 
-#### `navio.stacks.popToTop()`
+#### `.stacks.popToTop()`
 
 Takes you back to the first screen in the stack, dismissing all the others.
 
-#### `navio.stacks.setRoot(name)`
+#### `.stacks.setRoot(name)`
 
 Sets a new app root from stacks.
 
@@ -626,15 +815,15 @@ Sets a new app root from stacks.
 
 Tabs-related actions.
 
-#### `navio.tabs.jumpTo(name)`
+#### `.tabs.jumpTo(name)`
 
 Can be used to jump to an existing route in the tab navigator.
 
-#### `navio.tabs.updateOptions(name, options)`
+#### `.tabs.updateOptions(name, options)`
 
 Updates options for a given tab. Can be used to change badge count.
 
-#### `navio.tabs.setRoot(name)`
+#### `.tabs.setRoot(name)`
 
 Sets a new app root from tabs.
 
@@ -642,23 +831,27 @@ Sets a new app root from tabs.
 
 Drawers-related actions.
 
-#### `navio.drawers.open()`
+#### `.drawers.open()`
 
 Can be used to open the drawer pane.
 
-#### `navio.drawers.close()`
+#### `.drawers.close()`
 
 Can be used to close the drawer pane.
 
-#### `navio.drawers.toggle()`
+#### `.drawers.toggle()`
 
 Can be used to open the drawer pane if closed, or close if open.
 
-#### `navio.drawers.jumpTo(name)`
+#### `.drawers.jumpTo(name)`
 
 Can be used to jump to an existing route in the drawer navigator.
 
-#### `navio.drawers.setRoot(name)`
+#### `.drawers.updateOptions(name, options)`
+
+Updates options for a given drawer menu content. Can be used to change its title.
+
+#### `.drawers.setRoot(name)`
 
 Sets a new app root from drawers.
 
@@ -666,13 +859,33 @@ Sets a new app root from drawers.
 
 Modals-related actions.
 
-#### `navio.modals.show()`
+#### `.modals.show()`
 
 Can be used to show an existing modal.
 
 ## TypeScript
 
-Navio is developed in TypeScript from the beginning. TypeScript helps with autocompletion and to achieve better DX. There are still some cases where I don't know the best way of doing it in TypeScript. So if you are a TypeScript expert, please open an issue for help.
+Navio is developed in TypeScript from the beginning. TypeScript helps with autocompletion and to achieve better DX. There are still some issues (could be found at `index.tsx`). So if you are a TypeScript expert, please open an issue for help.
+
+#### Autocompletion
+
+In order to use full power of TS autocompletion, you'll need to define all layout components (could be just empty object). I don't know how to fix that at the moment.
+
+```tsx
+const navio = Navio.build({
+  screens: {Home, Settings},
+  stacks: {MainStack: ['Main', 'Settings']},
+  root: '...', // 🚫 won't help w/ autocompletion
+});
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  stacks: {MainStack: ['Main', 'Settings']},
+  drawers: {},
+  tabs: {},
+  root: '...', // ✅ will help w/ autocompletion
+});
+```
 
 ## Navio + React Navigation
 
@@ -684,10 +897,11 @@ If you've found any diffilculties with using Navio and [React Navigation](https:
 
 There are still some things I would like to add to the library:
 
-- [x] `.updateOptions()` for specific tab.
+- [x] `.updateOptions()` for specific tab and drawer.
+- [x] Tabs can be placed inside Drawer and vice versa.
+- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
-- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Extend Navio funtionality and app layout.
 - [ ] Easy integration of Navio with React Navigation (eg. navio.Stack())
 - [ ] TypeScript issues @ `index.tsx` file.
