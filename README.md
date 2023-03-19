@@ -414,7 +414,7 @@ export default () => <navio.App />;
 
 </details>
 
-Advanced example with all available props can be found @ [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
+Advanced example with all available props can be found at [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
 
 ## Layout
 
