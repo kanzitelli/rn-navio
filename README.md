@@ -847,6 +847,10 @@ Can be used to open the drawer pane if closed, or close if open.
 
 Can be used to jump to an existing route in the drawer navigator.
 
+#### `.drawers.updateOptions(name, options)`
+
+Updates options for a given drawer menu content. Can be used to change its title.
+
 #### `.drawers.setRoot(name)`
 
 Sets a new app root from drawers.
@@ -861,7 +865,27 @@ Can be used to show an existing modal.
 
 ## TypeScript
 
-Navio is developed in TypeScript from the beginning. TypeScript helps with autocompletion and to achieve better DX. There are still some cases where I don't know the best way of doing it in TypeScript. So if you are a TypeScript expert, please open an issue for help.
+Navio is developed in TypeScript from the beginning. TypeScript helps with autocompletion and to achieve better DX. There are still some issues (could be found at `index.tsx`). So if you are a TypeScript expert, please open an issue for help.
+
+#### Autocompletion
+
+In order to use full power of TS autocompletion, you'll need to define all layout components (could be just empty object). I don't know how to fix that at the moment.
+
+```tsx
+const navio = Navio.build({
+  screens: {Home, Settings},
+  stacks: {MainStack: ['Main', 'Settings']},
+  root: '...', // 🚫 won't help w/ autocompletion
+});
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  stacks: {MainStack: ['Main', 'Settings']},
+  drawers: {},
+  tabs: {},
+  root: '...', // ✅ will help w/ autocompletion
+});
+```
 
 ## Navio + React Navigation
 
