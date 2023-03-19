@@ -159,15 +159,12 @@ export type RootProps<RootName extends string> = {
 };
 
 // Tunnel (Event Emitter)
-export type TunnelEvent$Tabs$UpdateOptions$Params<
-  Name = string,
-  Options = BottomTabNavigationOptions,
-> = {
+export type TunnelEvent$UpdateOptions$Params<Name = string, Options = any> = {
   name: Name;
   options: Options;
 };
 
-export type TunnelEvent = 'tabs.updateOptions';
+export type TunnelEvent = 'tabs.updateOptions' | 'drawer.updateOptions';
 export type TunnelParams<T = any> = T;
 export type TunnelListener = (params: TunnelParams) => void;
 export type TunnelEvents = Partial<Record<TunnelEvent, TunnelListener[]>>;

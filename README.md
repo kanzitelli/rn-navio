@@ -873,11 +873,11 @@ If you've found any diffilculties with using Navio and [React Navigation](https:
 
 There are still some things I would like to add to the library:
 
-- [x] `.updateOptions()` for specific tab.
+- [x] `.updateOptions()` for specific tab and drawer.
 - [x] Tabs can be placed inside Drawer and vice versa.
+- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
-- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Extend Navio funtionality and app layout.
 - [ ] Easy integration of Navio with React Navigation (eg. navio.Stack())
 - [ ] TypeScript issues @ `index.tsx` file.
