@@ -35,7 +35,7 @@ import {
   TTabsContentValue,
   TDrawerContentValue,
   DefaultOptions,
-  TunnelEvent$Tabs$UpdateOptions$Params,
+  TunnelEvent$UpdateOptions$Params,
 } from './types';
 import {NavioTunnel} from './tunnel';
 import {safeOpts} from './help';
@@ -135,6 +135,7 @@ export class Navio<
 
   // we use them to store tabs updated options during session
   private __tabsUpdatedOptions: Record<string, BottomTabNavigationOptions> = {};
+  private __drawerUpdatedOptions: Record<string, DrawerNavigationOptions> = {};
 
   // ========
   // | Init |
@@ -400,7 +401,7 @@ export class Navio<
           self.tunnel.echo('tabs.updateOptions', {
             name,
             options,
-          } as TunnelEvent$Tabs$UpdateOptions$Params<TabsContentName>);
+          } as TunnelEvent$UpdateOptions$Params<TabsContentName, BottomTabNavigationOptions>);
         }
       },
 
@@ -497,6 +498,21 @@ export class Navio<
       jumpTo<T extends DrawersContentName>(name: T) {
         if (self.navIsReady) {
           self.navRef.current?.dispatch(DrawerActions.jumpTo(name as string));
+        }
+      },
+
+      /**
+       * `updateOptions(...)` action updates provided drawer's options.
+       *
+       * @param name name of the drawer content
+       * @param options `DrawerNavigationOptions` options for the drawer.
+       */
+      updateOptions<T extends DrawersContentName>(name: T, options: DrawerNavigationOptions) {
+        if (self.navIsReady) {
+          self.tunnel.echo('drawer.updateOptions', {
+            name,
+            options,
+          } as TunnelEvent$UpdateOptions$Params<DrawersContentName, DrawerNavigationOptions>);
         }
       },
 
@@ -635,9 +651,6 @@ export class Navio<
       return <></>;
     }
 
-    // -- getting navigator props
-    const navigatorProps = this.__StackGetNavigatorProps(stackDef);
-
     // -- building navigator
     const Stack = createNativeStackNavigator();
     const StackScreensMemo = useMemo(() => {
@@ -645,6 +658,9 @@ export class Navio<
         this.StackScreen({StackNavigator: Stack, name: sk}),
       );
     }, [stackDef, screens, stacks]);
+
+    // -- getting navigator props
+    const navigatorProps = this.__StackGetNavigatorProps(stackDef);
 
     return <Stack.Navigator {...navigatorProps}>{StackScreensMemo}</Stack.Navigator>;
   };
@@ -753,7 +769,7 @@ export class Navio<
     useEffect(() => {
       this.tunnel.on(
         'tabs.updateOptions',
-        (params: TunnelEvent$Tabs$UpdateOptions$Params<string>) => {
+        (params: TunnelEvent$UpdateOptions$Params<string, BottomTabNavigationOptions>) => {
           const tcname = params.name;
           const tcopts = params.options;
           this.__tabsUpdatedOptions = {
@@ -873,10 +889,7 @@ export class Navio<
   private Drawer: React.FC<{
     drawerDef: TDrawerDefinition<DrawersName> | undefined;
   }> = ({drawerDef}) => {
-    const {drawers, hooks} = this.layout;
-
-    // -- running hooks
-    if (hooks) for (const h of hooks) if (h) h();
+    const {drawers, defaultOptions, hooks} = this.layout;
 
     if (!drawers) {
       this.log('No drawers registered');
@@ -890,25 +903,72 @@ export class Navio<
       return <></>;
     }
 
-    // -- building navigator
-    const Drawer = useMemo(() => createDrawerNavigator(), [drawers]);
-    const currentDrawersContentKeys = useMemo(
-      () => Object.keys(currentDrawer.content),
-      [currentDrawer.content],
+    // -- internal state
+    const [updatedOptions, setUpdatedOptions] = useState<Record<string, DrawerNavigationOptions>>(
+      {},
     );
 
+    // -- internal effects
+    useEffect(() => {
+      this.tunnel.on(
+        'drawer.updateOptions',
+        (params: TunnelEvent$UpdateOptions$Params<string, DrawerNavigationOptions>) => {
+          const name = params.name;
+          const opts = params.options;
+          this.__drawerUpdatedOptions = {
+            ...this.__drawerUpdatedOptions,
+            [name]: {...this.__drawerUpdatedOptions[name], ...opts},
+          };
+          setUpdatedOptions(this.__drawerUpdatedOptions);
+        },
+      );
+    }, [drawerDef]);
+
+    // -- internal memos
+    const currentDrawerContent = useMemo(() => currentDrawer.content, [currentDrawer]);
+    const currentDrawerContentKeys = useMemo(
+      () => Object.keys(currentDrawerContent),
+      [currentDrawerContent],
+    );
+
+    // -- running hooks
+    if (hooks) for (const h of hooks) if (h) h();
+
+    // -- building navigator
+    const Drawer = useMemo(() => createDrawerNavigator(), [drawers]);
     const DrawerScreensMemo = useMemo(() => {
-      return currentDrawersContentKeys.map(key =>
+      return currentDrawerContentKeys.map(key =>
         this.DrawerScreen({
           name: key,
           DrawerNavigator: Drawer,
           content: currentDrawer.content[key],
         }),
       );
-    }, [Drawer, currentDrawersContentKeys]);
+    }, [Drawer, currentDrawerContentKeys]);
+
+    // options
+    const Opts: BaseOptions<BottomTabNavigationOptions> = props => {
+      const rName = props?.route?.name;
+      if (!rName) return {};
+
+      const customDefaultOptions = this.getCustomDefaultOptions()?.drawers?.screen ?? {};
+      const dcsDefaultOpts = defaultOptions?.drawers?.screen ?? {};
+      const dcsOpts = (currentDrawer?.content[rName] as any)?.options ?? {};
+      const dcnpOpts = currentDrawer?.navigatorProps?.screenOptions ?? {};
+      const updOpts = updatedOptions[rName] ?? {};
+      return {
+        ...safeOpts(customDefaultOptions)(props), // [!] custom default options
+        ...safeOpts(dcsDefaultOpts)(props), // navio.defaultOptions.drawers.screen
+        ...safeOpts(dcnpOpts)(props), // navio.drawers.[].navigatorProps.screenOptions -- because we override it below
+        ...safeOpts(dcsOpts)(props), // tab-based options
+        ...safeOpts(updOpts)(props), // upddated options (navio.drawers.updateOptions())
+      };
+    }; // must be function. merge options from buildNavio. also providing default options
 
     return (
-      <Drawer.Navigator {...currentDrawer.navigatorProps}>{DrawerScreensMemo}</Drawer.Navigator>
+      <Drawer.Navigator {...currentDrawer.navigatorProps} screenOptions={Opts}>
+        {DrawerScreensMemo}
+      </Drawer.Navigator>
     );
   };
 
@@ -917,8 +977,6 @@ export class Navio<
     name: string;
     content: TDrawerContentValue<ScreensName, StacksName, TabsName>;
   }> = ({DrawerNavigator, name, content}) => {
-    const {defaultOptions} = this.layout;
-
     if (!content.stack && !content.tabs) {
       this.log(`Either 'stack' or 'tabs' must be provided for "${name}" drawer content.`);
       return null;
@@ -932,18 +990,8 @@ export class Navio<
         ? this.Tabs({tabsDef: content.tabs})
         : null;
 
-    // options
-    const customDefaultOptions = this.getCustomDefaultOptions()?.drawers?.screen ?? {};
-    const dcsDefaultOptions = defaultOptions?.drawers?.screen ?? {};
-    const dcsOpts = content?.options ?? {};
-    const Opts: BaseOptions<DrawerNavigationOptions> = props => ({
-      ...safeOpts(customDefaultOptions)(props), // [!] custom default options
-      ...safeOpts(dcsDefaultOptions)(props), // navio.defaultOptions.drawers.screen
-      ...safeOpts(dcsOpts)(props), // drawer-based options
-    }); // must be function. merge options from buildNavio. also providing default options
-
     // screen
-    return <DrawerNavigator.Screen key={name} name={name} component={C} options={Opts} />;
+    return <DrawerNavigator.Screen key={name} name={name} component={C} />;
   };
 
   // | Modals |

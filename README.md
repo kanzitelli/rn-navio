@@ -414,7 +414,7 @@ export default () => <navio.App />;
 
 </details>
 
-Advanced example with all available props can be found @ [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
+Advanced example with all available props can be found at [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
 
 ## Layout
 
@@ -847,6 +847,10 @@ Can be used to open the drawer pane if closed, or close if open.
 
 Can be used to jump to an existing route in the drawer navigator.
 
+#### `.drawers.updateOptions(name, options)`
+
+Updates options for a given drawer menu content. Can be used to change its title.
+
 #### `.drawers.setRoot(name)`
 
 Sets a new app root from drawers.
@@ -861,7 +865,27 @@ Can be used to show an existing modal.
 
 ## TypeScript
 
-Navio is developed in TypeScript from the beginning. TypeScript helps with autocompletion and to achieve better DX. There are still some cases where I don't know the best way of doing it in TypeScript. So if you are a TypeScript expert, please open an issue for help.
+Navio is developed in TypeScript from the beginning. TypeScript helps with autocompletion and to achieve better DX. There are still some issues (could be found at `index.tsx`). So if you are a TypeScript expert, please open an issue for help.
+
+#### Autocompletion
+
+In order to use full power of TS autocompletion, you'll need to define all layout components (could be just empty object). I don't know how to fix that at the moment.
+
+```tsx
+const navio = Navio.build({
+  screens: {Home, Settings},
+  stacks: {MainStack: ['Main', 'Settings']},
+  root: '...', // 🚫 won't help w/ autocompletion
+});
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  stacks: {MainStack: ['Main', 'Settings']},
+  drawers: {},
+  tabs: {},
+  root: '...', // ✅ will help w/ autocompletion
+});
+```
 
 ## Navio + React Navigation
 
@@ -873,11 +897,11 @@ If you've found any diffilculties with using Navio and [React Navigation](https:
 
 There are still some things I would like to add to the library:
 
-- [x] `.updateOptions()` for specific tab.
+- [x] `.updateOptions()` for specific tab and drawer.
 - [x] Tabs can be placed inside Drawer and vice versa.
+- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
-- [ ] Make deeplinking easier by providing `linking` prop to screens.
 - [ ] Extend Navio funtionality and app layout.
 - [ ] Easy integration of Navio with React Navigation (eg. navio.Stack())
 - [ ] TypeScript issues @ `index.tsx` file.
