@@ -370,6 +370,50 @@ export default () => <navio.App />;
 
 </details>
 
+### Drawer with custom content
+
+Opens app with main drawer with custom content.
+
+<details>
+<summary>Show code</summary>
+
+```tsx
+import {Navio} from 'rn-navio';
+import {Home, Settings} from '@app/screens';
+
+const navio = Navio.build({
+  screens: {Home, Settings},
+  drawers: {
+    MainDrawer: {
+      content: {
+        Main: {
+          stack: ['Home'],
+        },
+        Settings: {
+          stack: ['Settings'],
+        },
+      },
+
+      navigatorProps: {
+        drawerContent: (props: any) => (
+          <DrawerContentScrollView {...props}>
+            <DrawerItemList {...props} />
+
+            <View style={{height: 1, backgroundColor: 'black'}} />
+            <DrawerItem label="Close drawer" onPress={() => navio.drawers.close()} />
+          </DrawerContentScrollView>
+        ),
+      },
+    },
+  },
+  root: 'MainDrawer',
+});
+
+export default () => <navio.App />;
+```
+
+</details>
+
 Advanced example with all available props can be found @ [expo-starter](https://github.com/kanzitelli/expo-starter/blob/master/src/navio.tsx)
 
 ## Layout
