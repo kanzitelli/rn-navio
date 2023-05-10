@@ -30,6 +30,26 @@ For more information, please check the [installation steps](https://reactnavigat
 
 </details>
 
+## Getting started
+Add Navio to your project: 
+
+  1. Build your navigation with ```const navio = Navio.build({...yourBuildHere})``` in ```src/app/navigation/index.tsx``` (you can set any path)
+  2. Export your navigation with ```export const NavioApp = navio.App``` or ```export default () => <navio.App />```
+  3. (Optional)  Also you may need to export ```export const getNavio = () => navio;``` to use it in components with ```const navio = getNavio()```
+  4. Place ```NavioApp``` in your ```App.tsx```  like in example below. If you exported NavioApp as default use ```import  NavioApp  from "./src/app/navigation"``` instead of ```import { NavioApp } from "./src/app/navigation" ``` 
+```
+import { NavioApp } from "./src/app/navigation"
+
+export default function App() {
+  return (
+    <View style={{ flex: 1 }}>
+      <StatusBar />
+      <NavioApp />
+    </View>
+  );
+}
+```
+
 ## Playground
 
 ### Expo Starter
