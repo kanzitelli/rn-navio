@@ -202,6 +202,37 @@ export class Navio<
     }
   }
 
+  private getSafeRoot(name: RootName | undefined): StackName | TabsName | DrawersName | undefined {
+    if (!name) return undefined;
+    const {stacks, tabs, drawers} = this.layout;
+
+    const split = name.split('.');
+    const type = split[0]; // tabs, stacks, drawers
+    const routeName = split.slice(1).join(':');
+
+    if (type === 'tabs') {
+      const rName = routeName as TabsName;
+      if (!!tabs && !tabs[rName]) {
+        this.log('Wrong app root', 'warn');
+      }
+      return rName;
+    }
+    if (type === 'stacks') {
+      const rName = routeName as StackName;
+      if (!!stacks && !stacks[rName]) {
+        this.log('Wrong app root', 'warn');
+      }
+      return rName;
+    }
+    if (type === 'drawers') {
+      const rName = routeName as DrawersName;
+      if (!!drawers && !drawers[rName]) {
+        this.log('Wrong app root', 'warn');
+      }
+      return rName;
+    }
+  }
+
   private getCustomDefaultOptions(): DefaultOptions {
     return {
       stacks: {
@@ -1045,19 +1076,23 @@ export class Navio<
   /**
    * Generates `<Root />` component for provided layout. Returns Stack Navigator.
    */
-  private Root: React.FC<RootProps<TRootName<StackName, TabsName, DrawersName>>> = ({
-    root: parentRoot,
-  }) => {
+  private Root: React.FC<RootProps<RootName>> = ({root: parentRoot}) => {
     const {stacks, tabs, modals, drawers, root} = this.layout;
-    const appRoot = parentRoot ?? root;
     const AppNavigator = createNativeStackNavigator();
+    const appRoot = this.getSafeRoot(parentRoot ?? root);
+
+    if (!appRoot) {
+      this.log('No modal found');
+      return <></>;
+    }
 
     // Effects
     useEffect(() => {
       // -- changing route if `root` was changed
-      if (parentRoot) {
-        this.__setRoot(parentRoot);
+      if (!!appRoot) {
+        this.__setRoot(appRoot);
       }
+      // listening to changes of parentRoot, but setting appRoot value
     }, [parentRoot]);
 
     // UI Methods
@@ -1129,10 +1164,7 @@ export class Navio<
    * Generates your app's root component for provided layout.
    * Can be used as `<AppProviders><navio.App /></AppProviders>`
    */
-  App: React.FC<RootProps<TRootName<StackName, TabsName, DrawersName>>> = ({
-    navigationContainerProps,
-    root: parentRoot,
-  }) => {
+  App: React.FC<RootProps<RootName>> = ({navigationContainerProps, root: parentRoot}) => {
     // Navigation-related methods
     const _navContainerRef = (instance: NavigationContainerRef<{}> | null) => {
       this.navRef.current = instance;
