@@ -71,7 +71,11 @@ export type TDrawersData<ScreensName, StacksName, TabsName> = {
 // Modal
 export type TModalData<ScreensName, StacksName> = TStackDefinition<ScreensName, StacksName>;
 
-export type TRootName<StacksName, TabsName, DrawersName> = TabsName | StacksName | DrawersName;
+export type TRootName<
+  StacksName extends string,
+  TabsName extends string,
+  DrawersName extends string,
+> = `tabs.${TabsName}` | `stacks.${StacksName}` | `drawers.${DrawersName}`;
 export type ExtractProps<Type> = Type extends React.FC<infer X> ? X : never;
 
 // Layout

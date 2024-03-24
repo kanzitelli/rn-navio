@@ -630,7 +630,11 @@ export class Navio<
       ...safeOpts(containerOptions)(props), // navio.stacks.[].containerOptions
     }); // must be function. merge options from buildNavio. also providing default options
 
-    return <Stack.Screen key={name} name={name} component={C} options={Opts} />;
+    return (
+      <Stack.Screen key={name} name={name} options={Opts}>
+        {(props: any) => <C {...props} />}
+      </Stack.Screen>
+    );
   };
 
   private Stack: React.FC<{
