@@ -172,7 +172,7 @@ export class Navio<
 
   useN() {
     // return dump React Navigation webhook
-    return useNavigation;
+    return useNavigation();
   }
 
   private get navIsReady() {
