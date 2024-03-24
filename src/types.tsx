@@ -5,8 +5,10 @@ import {NavigationContainer, ParamListBase, RouteProp} from '@react-navigation/n
 import {DrawerNavigationOptions} from '@react-navigation/drawer';
 import {NativeStackNavigatorProps} from '@react-navigation/native-stack/lib/typescript/src/types';
 
+// Container is anything from Stack, Tabs, Drawer, Modal
+
 export type Keys<T> = keyof T;
-export type ContentKeys<T extends {content: any}> = Keys<T['content']>;
+export type ContainerLayoutKeys<T extends {layout: any}> = Keys<T['layout']>;
 
 export type RootSetAs = keyof Pick<Layout, 'stacks' | 'tabs' | 'drawers'>;
 
@@ -19,18 +21,24 @@ export type BaseOptions<Return = NativeStackNavigationOptions> =
   | ((props?: BaseOptionsProps) => Return);
 type ScreenOptions = BaseOptions<NativeStackNavigationOptions>;
 export type StackScreenOptions = ScreenOptions;
-export type ModalScreenOptions = ScreenOptions;
+export type ModalScreenOptions = StackScreenOptions;
 export type TabScreenOptions = BaseOptions<BottomTabNavigationOptions>;
 export type DrawerScreenOptions = BaseOptions<DrawerNavigationOptions>;
-export type ContainerOptions = BaseOptions<NativeStackNavigationOptions>;
+
+// Navigator options
+type StackNavigatorProps = Omit<NativeStackNavigatorProps, 'children'>; // omitting required children prop
+type ModalNavigatorProps = StackNavigatorProps;
+type TabNavigatorProps = any; // TODO BottomTabNavigatorProps doesn't exist :(
+type DrawerNavigatorProps = any; // TODO DrawerNavigatorProps doesn't exist :(
 
 // Definitions
-export type TStackDefinition<ScreensName, StacksName> =
-  | StacksName
-  | ScreensName[]
-  | TStackDataObj<ScreensName>;
+export type TStackDefinition<ScreenName, StackName> =
+  | StackName
+  | ScreenName[]
+  | TStackDataObj<ScreenName>;
 export type TDrawerDefinition<DrawerName> = DrawerName; // maybe smth else will be added
-export type TTabsDefinition<TabsName> = TabsName; // maybe smth else will be added
+export type TTabsDefinition<TabName> = TabName; // maybe smth else will be added
+export type TModalsDefinition<ModalName> = ModalName; // maybe smth else will be added
 
 // Data
 export type TScreenData<Props = {}> =
@@ -40,42 +48,46 @@ export type TScreenData<Props = {}> =
       options?: ScreenOptions;
     };
 // Stack
-export type TStackDataObj<ScreensName> = {
-  screens: ScreensName[];
-  containerOptions?: ContainerOptions;
-  navigatorProps?: Omit<NativeStackNavigatorProps, 'children'>; // omitting required children prop
+export type TStackDataObj<ScreenName> = {
+  screens: ScreenName[];
+  options?: StackScreenOptions;
+  navigatorProps?: StackNavigatorProps;
 };
-export type TStackData<ScreensName> = ScreensName[] | TStackDataObj<ScreensName>;
+export type TStackData<ScreenName> = ScreenName[] | TStackDataObj<ScreenName>;
 // Tabs
-export type TTabsContentValue<ScreensName, StacksName, DrawersName> = {
-  stack?: TStackDefinition<ScreensName, StacksName>;
+export type TTabLayoutValue<ScreenName, StackName, DrawersName> = {
+  stack?: TStackDefinition<ScreenName, StackName>;
   drawer?: TDrawerDefinition<DrawersName>;
   options?: TabScreenOptions;
 };
-export type TTabsData<ScreensName, StacksName, DrawersName> = {
-  content: Record<string, TTabsContentValue<ScreensName, StacksName, DrawersName>>;
-  containerOptions?: ContainerOptions;
-  navigatorProps?: any; // TODO BottomTabNavigatorProps doesn't exist :(
+export type TTabsData<ScreenName, StackName, DrawersName> = {
+  layout: Record<string, TTabLayoutValue<ScreenName, StackName, DrawersName>>;
+  options?: TabScreenOptions;
+  navigatorProps?: TabNavigatorProps;
 };
 // Drawer
-export type TDrawerContentValue<ScreensName, StacksName, TabsName> = {
-  stack?: TStackDefinition<ScreensName, StacksName>;
+export type TDrawerLayoutValue<ScreenName, StackName, TabsName> = {
+  stack?: TStackDefinition<ScreenName, StackName>;
   tabs?: TTabsDefinition<TabsName>;
   options?: DrawerScreenOptions;
 };
-export type TDrawersData<ScreensName, StacksName, TabsName> = {
-  content: Record<string, TDrawerContentValue<ScreensName, StacksName, TabsName>>;
-  containerOptions?: ContainerOptions;
-  navigatorProps?: any; // TODO DrawerNavigatorProps doesn't exist :(
+export type TDrawersData<ScreenName, StackName, TabsName> = {
+  layout: Record<string, TDrawerLayoutValue<ScreenName, StackName, TabsName>>;
+  options?: DrawerScreenOptions;
+  navigatorProps?: DrawerNavigatorProps;
 };
 // Modal
-export type TModalData<ScreensName, StacksName> = TStackDefinition<ScreensName, StacksName>;
+export type TModalData<ScreenName, StackName> = {
+  stack?: TStackDefinition<ScreenName, StackName>;
+  options?: ModalScreenOptions;
+  // navigatorProps?: ModalNavigatorProps; // we don't need it because we build Navigator.Screen instead of Drawer.Navigator
+};
 
 export type TRootName<
-  StacksName extends string,
+  StackName extends string,
   TabsName extends string,
   DrawersName extends string,
-> = `tabs.${TabsName}` | `stacks.${StacksName}` | `drawers.${DrawersName}`;
+> = `tabs.${TabsName}` | `stacks.${StackName}` | `drawers.${DrawersName}`;
 export type ExtractProps<Type> = Type extends React.FC<infer X> ? X : never;
 
 // Layout
@@ -138,18 +150,18 @@ export type Layout<
 export type DefaultOptions = {
   stacks?: {
     screen?: StackScreenOptions;
-    container?: ContainerOptions;
+    container?: ScreenOptions;
   };
   tabs?: {
     screen?: TabScreenOptions;
-    container?: ContainerOptions;
+    container?: ScreenOptions;
   };
   drawers?: {
     screen?: DrawerScreenOptions;
-    container?: ContainerOptions;
+    container?: ScreenOptions;
   };
   modals?: {
-    container?: ContainerOptions;
+    container?: ScreenOptions;
   };
 };
 export type NavioScreen<Props = {}> = React.FC<PropsWithChildren<Props>> & {
