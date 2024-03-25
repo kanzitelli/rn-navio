@@ -184,6 +184,8 @@ const navio = Navio.build({
   root: 'tabs.AppTabs',
 });
 
+export default () => <navio.App />;
+
 // Now you can push `ProductPageStack` from tabs and it will be without tabs.
 navio.stacks.push('ProductPageStack');
 ```
@@ -320,6 +322,8 @@ const navio = Navio.build({
   root: 'stacks.MainApp',
 });
 
+export default () => <navio.App />;
+
 // Let's say you show `MainApp` in the beginning with limited functionality
 // and have some screen with "Sign in" button. After pressing "Sign in",
 // you can show `Auth` flow.
@@ -335,8 +339,6 @@ const Main = () => {
 
 // After `Auth` flow is successfully finished, you can show `MainApp`.
 navio.setRoot('stacks', 'MainApp');
-
-export default () => <navio.App />;
 ```
 
 ### Dynamic

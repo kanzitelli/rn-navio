@@ -91,7 +91,7 @@ const navio = Navio.build({
 export default () => <navio.App />;
 ```
 
-If you'd like to see more complex and exotic example, please follow [this link](https://link-to-examples).
+If you'd like to see more complex and exotic example, please follow [this link](/docs/layout-examples.md).
 
 ## Playground
 
