@@ -7,5 +7,4 @@ export type {NavioScreen};
 // minor issues
 // TODO [ISSUE][TS] When there are more than 2 drawers or 2 tabs, then `.jumpTo()` won't help with autocompletion.
 // TODO [ISSUE][TS] `BottomTabNavigatorProps` and `DrawerNavigatorProps` are missing from react-navigation exports. Type `any` is currently used.
-// TODO [ISSUE][TS] `RootName` is `string` when one of [stacks, tabs, drawers] is not defined. Fix: just initialise them as empty object {stacks: {}, tabs: {}, drawers: {}}
 // TODO [ISSUE][TS] `navio.setParams` - think about how to take all names and not getting plain string when some name is not defined. It's related to `RootName` issue.
