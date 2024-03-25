@@ -57,7 +57,8 @@ const navio = Navio.build({
 export default () => <navio.App />;
 ```
 
-This code will build 2 tabs app.
+<details>
+<summary>Tab-based app with 2 tabs</summary>
 
 ```tsx
 // App.tsx
