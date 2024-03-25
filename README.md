@@ -6,7 +6,7 @@
 
 Navio is a navigation library for React Native built on top of [React Navigation](https://github.com/react-navigation/react-navigation). The main goal is to improve DX by building the app layout in one place and using the power of TypeScript to provide autocompletion and other features.
 
-Navio lets you easily create different kinds of apps: bottom tabs-based, simple single-screen, and apps with drawer layouts. It takes care of all boilerplate code configuration for Navigators, Screens, Stacks, Tabs, and Drawers under the hood, so you can focus on developing your app functionality. One of the strong parts of Navio is it helps to separate business logic and UI part of the app with ease.
+Navio lets you easily create different kinds of apps: bottom tabs-based, simple single-screen, and apps with drawer layouts. It takes care of all boilerplate code configuration for Navigators, Screens, Stacks, Tabs, and Drawers under the hood, so you can focus on developing your app's business logic.
 
 > If `Navio` helped you in a way, support it with ⭐️
 
@@ -112,7 +112,7 @@ Play with the library in the [Expo Snack](https://snack.expo.dev/@kanzitelli/rn-
 
 ## Navigation API
 
-Navio provides a colleciton of actions to perform navigation within the app. For API, suppose, you have a `navio` instance:
+Navio provides a colleciton of actions to perform navigation within the app. Suppose, you have a `navio` object:
 
 ### Common
 
@@ -217,12 +217,15 @@ Modals-related actions.
 Useful hooks.
 
 - `.useN()`
+
   Duplicate of `useNavigation()` hook from React Navigation. Used for convenience inside screens to get access to navigation object. [Docs](https://reactnavigation.org/docs/use-navigation/).
 
 - `.useR()`
+
   Duplicate of `useRoute()` hook from React Navigation. Used to convenience inside screens to get access to route object. [Docs](https://reactnavigation.org/docs/use-route)
 
 - `.useParams()`
+
   Used for quick access to navigation route params. Used to convenience inside screens when passing params.
 
 ## Layout structure
@@ -477,7 +480,7 @@ const Screen = () => {
 };
 ```
 
-#### New approach with Navio `v0.0.8+`
+#### New approach with Navio `v0.1.+`
 
 ```tsx
 // Use .modals.show method of Navio and pass params
@@ -495,13 +498,7 @@ Navio can be used among with [React Navigation](https://github.com/react-navigat
 
 If you've found any diffilculties with using Navio and [React Navigation](https://github.com/react-navigation/react-navigation), feel free to open an issue for a discussion.
 
-## Why Navio?
-
-TODO
-
 ## Future plans
-
-TODO
 
 ### Enhancements
 
@@ -509,8 +506,8 @@ There are still some things I would like to add to the library:
 
 - [x] `.updateOptions()` for specific tab and drawer.
 - [x] Tabs can be placed inside Drawer and vice versa.
-- [ ] Make deeplinking easier by providing `linking` prop to screens.
-- [ ] Improve docs. Deeplinking section, etc. Based on this [issue](https://github.com/kanzitelli/expo-starter/issues/29).
+- [x] Pass props to Modals.
+- [ ] Make deeplinking easier by providing `linking` prop to screens. [Issue](https://github.com/kanzitelli/expo-starter/issues/29).
 - [ ] Make Navio universal by adding [RNN](https://github.com/wix/react-native-navigation) and [rnn-screens](https://github.com/kanzitelli/rnn-screens).
 - [ ] Extend Navio funtionality and app layout.
 - [ ] Easy integration of Navio with React Navigation (eg. navio.Stack())
