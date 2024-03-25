@@ -10,6 +10,7 @@ import {
   StackActions,
   TabActions,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import {
   createNativeStackNavigator,
@@ -168,11 +169,6 @@ export class Navio<
   // ===========
   get N() {
     return this.navRef;
-  }
-
-  useN() {
-    // return dump React Navigation webhook
-    return useNavigation();
   }
 
   private get navIsReady() {
@@ -571,6 +567,33 @@ export class Navio<
         }
       },
     };
+  }
+
+  // =========
+  // | Hooks |
+  // =========
+  /**
+   * `useN()` is the duplicate of `useNavigation()` hook from React Navigation.
+   *
+   */
+  useN() {
+    return useNavigation();
+  }
+
+  /**
+   * `useR()` is the duplicate of `useRoute()` hook from React Navigation.
+   *
+   */
+  useR() {
+    return useRoute();
+  }
+
+  /**
+   * `useParams()` is used to quickly extract params from the React Navigation route.
+   *
+   */
+  useParams<Params = any>() {
+    return useRoute()?.params as Params;
   }
 
   // ===========
