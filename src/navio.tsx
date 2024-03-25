@@ -131,14 +131,20 @@ export class Navio<
     Record<DrawersName, DrawersData>,
     RootName
   >;
+
+  // react navigation related
   private navRef: NavigationContainerRefWithCurrent<any>;
   private navIsReadyRef: React.MutableRefObject<boolean | null>;
 
+  // for data transfer
   private tunnel: NavioTunnel;
 
-  // we use them to store tabs updated options during session
+  // updated options for tabs and drawers. used to store data during session
   private __tabsUpdatedOptions: Record<string, BottomTabNavigationOptions> = {};
   private __drawerUpdatedOptions: Record<string, DrawerNavigationOptions> = {};
+
+  // params for modals. used to easier transfer data to modal
+  private __modalParams: Record<string, any> = {};
 
   // ========
   // | Init |
@@ -476,10 +482,24 @@ export class Navio<
        *
        * @param name ModalName
        */
-      show<T extends ModalName>(name: T) {
+      show<Params extends object | undefined>(name: ModalName, params?: Params) {
         if (self.navIsReady) {
+          // adding params to modals params data
+          if (!!params) {
+            self.__modalParams[name] = params;
+          }
+
           self.navigate(name);
         }
+      },
+
+      /**
+       * `getParams(...)` action can be used to get params passed to the modal.
+       *
+       * @param name ModalName
+       */
+      getParams<Params extends object | undefined>(name: ModalName) {
+        return self.__modalParams[name] as Params;
       },
     };
   }
@@ -1080,6 +1100,11 @@ export class Navio<
       return <></>;
     }
 
+    // methods
+    const clearParams = (name: string) => {
+      this.__modalParams[name] = undefined;
+    };
+
     // component
     const C = () => this.Stack({definition: currentModal?.stack});
 
@@ -1093,7 +1118,18 @@ export class Navio<
       ...safeOpts(options)(props), // navio.modals.[].options
     }); // must be function. merge options from buildNavio. also providing default options
 
-    return <Navigator.Screen key={name} name={name} component={C} options={Opts} />;
+    return (
+      <Navigator.Screen
+        key={name}
+        name={name}
+        component={C}
+        options={Opts}
+        // we need to subscribe to Modals.Listeners.Blur to clear modals params
+        listeners={({route}) => ({
+          blur: e => clearParams(route?.name),
+        })}
+      />
+    );
   };
 
   /**
