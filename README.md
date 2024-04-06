@@ -10,7 +10,7 @@ Navio lets you easily create different kinds of apps: bottom tabs-based, simple 
 
 > If `Navio` helped you in a way, support it with ⭐️
 
-☣️ <i>Navio is still a young library and may have breaking changes in the future.</i>
+☣️ <i>Navio is still a young library and may have breaking changes in the future. Check out if [Navio is production-ready](#is-navio-production-ready)</i>
 
 ## Quickstart
 
@@ -492,13 +492,25 @@ const Screen = () => {
 };
 ```
 
-### Navio + React Navigation
+### What is the difference between Expo Router, Navio, and React Navigation?
 
-Navio can be used among with [React Navigation](https://github.com/react-navigation/react-navigation). All hooks, actions, deep linking, and other stuff from [React Navigation](https://github.com/react-navigation/react-navigation) should work fine with Navio.
+[Expo Router](https://docs.expo.dev/router/introduction/) is a routing library designed for Universal React Native applications using Expo. It operates on a file-based routing system, making it an excellent choice for developers looking to create applications for both native (iOS and Android) and web platforms using a single codebase.
 
-If you've found any diffilculties with using Navio and [React Navigation](https://github.com/react-navigation/react-navigation), feel free to open an issue for a discussion.
+Navio, on the other hand, adopts a static configuration approach, similar to the layout building method seen in [React Native Navigation](https://github.com/wix/react-native-navigation). Navio primarily targets native platforms (iOS and Android), with less emphasis on web compatibility optimisation. In Navio, the application layout is configured within a single file.
+
+Both libraries are built on top of the [React Navigation](https://github.com/react-navigation/react-navigation) and can be used in conjunction with it. This means all the hooks, actions, deep linking capabilities, and other features from [React Navigation](https://github.com/react-navigation/react-navigation) are expected to work seamlessly with both. Notably, [React Navigation](https://github.com/react-navigation/react-navigation) introduces [Static Configuration in v7](https://reactnavigation.org/docs/7.x/static-configuration) (which has yet to be released).
+
+## Is Navio production-ready?
+
+Navio has been essential for the [BUDDY Marketplace (iOS app)](https://buddify.app/get/buddy-ios), helping us launch it in just 2-3 months. Its use in the app, which is gaining users daily and needs new features fast, allows us to focus more on creating valuable business logic instead of dealing with basic setup tasks.
+
+However, Navio is still a young library and lacks some features, like [seamless Deep Linking integration](https://github.com/kanzitelli/expo-starter/issues/29), which are important for its full effectiveness in production apps. Since it's part of a live app, I plan to update it regularly, adding new functionalities. You can see what's coming by checking the [Future Plans section](#future-plans).
+
+If you're using Navio in your app, I'd love to hear from you, and if there are additional features you're looking for.
 
 ## Future plans
+
+Navio began as an experimental (and a bit weird) project aimed at minimizing repetitive code in app layout using [React Navigation](https://github.com/react-navigation/react-navigation). I like the concept of static configuration, where the entire app layout setup is condensed into a single file. After implementing it within the expo-starter and receiving positive feedback, I decided to integrate it into the [active mobile app](https://buddify.app/get/buddy-ios). There are additional features I'd like to integrate into Navio. One of the most exciting goals is to merge [React Navigation](https://github.com/react-navigation/react-navigation) and [React Native Navigation](https://github.com/wix/react-native-navigation) functionalities into a unified API, streamlining the development process even further.
 
 ### Enhancements
 
