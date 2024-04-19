@@ -270,6 +270,7 @@ Builds an app with main drawer and custom content.
 // App.tsx
 import {Navio} from 'rn-navio';
 import {Home, Settings} from '@app/screens';
+import {DrawerContentScrollView, DrawerItemList, DrawerItem} from '@react-navigation/drawer';
 
 const navio = Navio.build({
   screens: {Home, Settings},
